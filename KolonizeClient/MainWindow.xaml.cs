@@ -21,7 +21,11 @@ namespace KolonizeClient
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Keeping with the 20x20 view port for now, eventually get all world cells in a cache
+        //Not have to to keep querying the the net for them... TODO
         Rectangle[,] DisplayGrid = new Rectangle[20, 20];
+        byte[,] WorldCells = new byte[20, 20];
+
         int TopX = 0;
         int TopY = 0;
         int ViewWidth = 20;
@@ -30,9 +34,10 @@ namespace KolonizeClient
         int PlayerViewPosY = 0;
         int PlayerWorldPosX = 0;
         int PlayerWorldPosY = 0;
-        //DispatcherTimer UpdateTimer;
+        Dictionary<string, PlayerInfo> OtherPlayers = new Dictionary<string, PlayerInfo>();
+        DispatcherTimer DrawTimer;
         Client theClient;
-        Brush PlayerCellColor;
+        bool UpdateLock = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -55,14 +60,42 @@ namespace KolonizeClient
                     drawCanvas.Children.Add(r);
                 }
             }
+            DrawTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(30)
+            };
+            DrawTimer.Tick += Draw;
+            DrawTimer.Start();
+        }
+
+        public void Draw(object sender, EventArgs e)
+        {
+            if (UpdateLock) return;
+            for(int x=0;x<20;++x)
+            {
+                for(int y=0;y<20;++y)
+                {
+                    DisplayGrid[x, y].Fill = CellToBrush(WorldCells[x,y]);
+                }
+            }
+            DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
+            foreach (var p in OtherPlayers.Values)
+            {
+                if (p.x > TopX && p.x < TopX + 20 && p.y > TopY && p.y < Top + 20)
+                {
+                    DisplayGrid[p.x - TopX, p.y - TopY].Fill = Brushes.DarkRed;
+                }
+            }
         }
 
         public void Update(PlayerInfo p)
         {
+            
             Dispatcher.BeginInvoke(new Action(()=> {
+                UpdateLock = true;
                 if (p.id == theClient.PlayerName)
                 {
-                    DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = PlayerCellColor;
+                    //DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = CellToBrush(WorldCells[PlayerViewPosX, PlayerViewPosY]);
                     PlayerWorldPosX = p.x;
                     PlayerWorldPosY = p.y;
                     PlayerViewPosX = PlayerWorldPosX - TopX;
@@ -73,15 +106,28 @@ namespace KolonizeClient
                         TopY = PlayerWorldPosY - 10;
                         foreach (var cell in theClient.GetRegionCells(TopX, TopX + 20, TopY, TopY + 20))
                         {
-                            DisplayGrid[cell.x - TopX, cell.y - TopY].Fill = CellToBrush(cell.cellType);
+                            //DisplayGrid[cell.x - TopX, cell.y - TopY].Fill = CellToBrush(cell.cellType);
+                            WorldCells[cell.x - TopX, cell.y - TopY] = cell.cellType;
                         }
                         PlayerViewPosX = PlayerWorldPosX - TopX;
                         PlayerViewPosY = PlayerWorldPosY - TopY;
                         theClient.RestartAsyncUpdate();
-                    }
-                    PlayerCellColor = DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill;
-                    DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
+                    }                    
+                    
+                    //DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
                 }
+                else
+                {
+                    if(!OtherPlayers.ContainsKey(p.id))
+                    {
+                        OtherPlayers.Add(p.id, p);
+                    }
+                    else
+                    {
+                        OtherPlayers[p.id] = p;
+                    }
+                }
+                UpdateLock = false;
             }));
         }
 
@@ -110,17 +156,17 @@ namespace KolonizeClient
             PlayerWorldPosY = p.y;
             TopX = p.x - 10;
             TopY = p.y - 10;
+            //Eventually get either a large region or all of the world
             foreach (var cell in theClient.GetRegionCells(TopX, TopX+20, TopY, TopY+20))
             {
                 DisplayGrid[cell.x - TopX, cell.y - TopY].Fill = CellToBrush(cell.cellType);
+                WorldCells[cell.x - TopX, cell.y - TopY] = cell.cellType;
             }
             PlayerViewPosX = PlayerWorldPosX - TopX;
             PlayerViewPosY = PlayerWorldPosY - TopY;
-            PlayerCellColor = DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill;
             DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
 
-            theClient.StartAsyncUpdate(Update);
-            //theClient.SetPlayerVelocity(0.05f, 0);
+            theClient.StartAsyncUpdate(Update);            
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -130,13 +176,13 @@ namespace KolonizeClient
                 switch(e.Key)
                 {
                     case Key.W:
-                        theClient.SetPlayerVelocity(0, -0.5f); break;
+                        theClient.SetPlayerDirection(0,1); break;
                     case Key.S:
-                        theClient.SetPlayerVelocity(0, 0.5f); break;
+                        theClient.SetPlayerDirection(2,1); break;
                     case Key.A:
-                        theClient.SetPlayerVelocity(-0.5f,0); break;
+                        theClient.SetPlayerDirection(3,1); break;
                     case Key.D:
-                        theClient.SetPlayerVelocity(0.5f, 0); break;
+                        theClient.SetPlayerDirection(1,1); break;
                 }
             }
         }

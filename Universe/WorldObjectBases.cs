@@ -55,7 +55,7 @@ namespace Universe
         {
             return new Vector() { x = Vx, y = Vy };
         }
-        public void Move(WorldCell[,] map)
+        public virtual void Move(WorldCell[,] map)
         {
             //if we have no velocity, don't move
             if (Vx == 0 && Vy == 0) return;

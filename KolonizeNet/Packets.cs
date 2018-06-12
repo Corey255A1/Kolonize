@@ -7,7 +7,14 @@ using System.Runtime.InteropServices;
 namespace KolonizeNet
 {
     public enum PacketTypes { REQUEST, REQUESTED, SET, UPDATE }
-    public enum DataTypes { WORLD_INFO, REGION_INFO, CELL_INFO, PLAYER_INFO }
+    public enum DataTypes {
+        WORLD_INFO,
+        REGION_INFO,
+        CELL_INFO,
+        PLAYER_INFO,
+        PLAYER_CONTROL,
+        OBJECT_INFO
+    }
     public static class WorldConstants
     {
         public const byte SPACE = 0;
@@ -19,6 +26,7 @@ namespace KolonizeNet
         public const byte ICE = 6;
 
     }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
     public struct Header
     {
@@ -76,11 +84,37 @@ namespace KolonizeNet
         }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+    public struct ObjectInfo
+    {
+        public Header header;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string id;
+        public int objecttype;
+        public int x;
+        public int y;
+        public float vx;
+        public float vy;
+        public ObjectInfo(PacketTypes p)
+        {
+            header.packetType = (byte)p;
+            header.dataType = (byte)DataTypes.OBJECT_INFO;
+            id = "";
+            x = 0;
+            y = 0;
+            vx = 0;
+            vy = 0;
+            objecttype = 0;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
     public struct PlayerInfo
     {
         public Header header;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
         public string id;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string key;
         public int x;
         public int y;
         public float vx;
@@ -90,10 +124,31 @@ namespace KolonizeNet
             header.packetType = (byte)p;
             header.dataType = (byte)DataTypes.PLAYER_INFO;
             id = "";
+            key = "";
             x = 0;
             y = 0;
             vx = 0;
             vy = 0;
+        }
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+    public struct PlayerControl
+    {
+        public Header header;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string id;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string key;
+        public int direction;
+        public int paces;
+        public PlayerControl(PacketTypes p)
+        {
+            header.packetType = (byte)p;
+            header.dataType = (byte)DataTypes.PLAYER_CONTROL;
+            id = "";
+            key = "";
+            direction = 0;
+            paces = -1;
         }
     }
 

@@ -9,8 +9,8 @@ namespace Universe
     public class Player : Moveable
     {
         public Player(int x, int y, string id, int size = 1) : base(x, y, id, size) { }
-
-        public void SetDirection(int dir)
+        private int StepsLeft = -1;
+        public void SetDirection(int dir, int paces)
         {
             switch(dir)
             {
@@ -20,6 +20,24 @@ namespace Universe
                 case 2: SetVelocity(0, .1f); break;
                 case 3: SetVelocity(-.1f, 0); break;
             }
+            StepsLeft = paces;
+        }
+        public override void Move(WorldCell[,] map)
+        {
+            var pos = GetPosition();
+            base.Move(map);
+            if (pos.x != (int)X || pos.y != (int)Y)
+            {
+                //If we moved, deduct a step
+                if (StepsLeft > 0)
+                {
+                    if (--StepsLeft == 0)
+                    {
+                        SetVelocity(0, 0);
+                    }
+                }
+            }
+            //Else we are a negative number and that means keep moving
         }
     }
 }

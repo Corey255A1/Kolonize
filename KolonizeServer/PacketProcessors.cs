@@ -16,11 +16,34 @@ namespace KolonizeServer
                 //Package the Region Data and Send it
                 case DataTypes.REGION_INFO: return ProcessRegionInfo(p, buff);
                 case DataTypes.PLAYER_INFO: return ProcessPlayerInfo(p, buff);
+                case DataTypes.PLAYER_CONTROL: return ProcessPlayerControl(p, buff);
                 default: return null;
 
             }
 
         }
+
+
+        private static IEnumerable<byte[]> ProcessPlayerControl(PacketTypes p, byte[] buff)
+        {
+            int offset = 0;
+            switch (p)
+            {
+                    //Using Player Control Packet now.
+                    case PacketTypes.SET:
+                        {
+                        PlayerControl pi = NetHelpers.ConvertBytesToStruct<PlayerControl>(buff, ref offset);
+                        Player playa = WorldInterface.GetPlayer(pi.id, pi.key);
+                        if (playa != null)
+                        {
+                            playa.SetDirection(pi.direction, pi.paces);
+                        }
+                        yield break;
+                        }
+            }
+            yield break;
+        }
+
         private static IEnumerable<byte[]> ProcessPlayerInfo(PacketTypes p, byte[] buff)
         {
             int offset = 0;
@@ -29,25 +52,32 @@ namespace KolonizeServer
                 case PacketTypes.REQUEST:
                     {
                         PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
-                        Player playa = WorldInterface.GetPlayer(pi.id);                        
-                        var coord = playa.GetPosition();
-                        pi = new PlayerInfo(PacketTypes.REQUESTED)
-                        {                            
-                            id = "",
-                            x = coord.x,
-                            y = coord.y,
-                        };
-                        yield return NetHelpers.ConvertStructToBytes(pi);
+                        Player playa = WorldInterface.GetPlayer(pi.id, pi.key);
+                        if (playa != null)
+                        {
+                            var coord = playa.GetPosition();
+                            var vel = playa.GetVelocity();
+                            pi = new PlayerInfo(PacketTypes.REQUESTED)
+                            {
+                                id = playa.Id,
+                                x = coord.x,
+                                y = coord.y,
+                                vx = vel.x,
+                                vy = vel.y
+                            };
+                            yield return NetHelpers.ConvertStructToBytes(pi);
+                        }
 
                     }
                     break;
-                case PacketTypes.SET:
-                    {
-                        PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
-                        Player playa = WorldInterface.GetPlayer(pi.id);
-                        playa.SetVelocity(pi.vx, pi.vy);                      
-                        yield break;
-                    }
+                //Using Player Control Packet now.
+                //case PacketTypes.SET:
+                //    {
+                //        PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
+                //        Player playa = WorldInterface.GetPlayer(pi.id);
+                //        playa.SetVelocity(pi.vx, pi.vy);                      
+                //        yield break;
+                //    }
             }
             yield break;
         }

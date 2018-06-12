@@ -37,7 +37,7 @@ namespace Kolonize
             worldref = w;
             InitializeComponent();
             player = new Player(500, 500, "Player1");
-            player.SetDirection(1);
+            player.SetDirection(1,-1);
             worldref.AddObject(player);
 
             for(int x=0; x < ViewWidth; ++x)

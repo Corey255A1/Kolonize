@@ -36,9 +36,9 @@ namespace Universe
             theWorld.AddObject(wo);
         }
 
-        public static Player GetPlayer(string name)
+        public static Player GetPlayer(string name,string key)
         {
-            return theWorld.GetPlayer(name);
+            return theWorld.GetPlayer(name,key);
         }
         public static void AddMoverUpdateCB(MoverUpdate m)
         {

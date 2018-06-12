@@ -50,6 +50,8 @@ namespace KolonizeClient
                 Console.WriteLine(e.ToString());
             }
         }
+        //What we should do instead is get a larger region (if not the whole region)
+        //Reduce the amount of times the cells need paged in.
         public List<CellInfo> GetRegionCells(int x1, int x2, int y1, int y2)
         {
             pauseAsync = true;
@@ -117,12 +119,12 @@ namespace KolonizeClient
             }
             return playa;
         }
-        public void SetPlayerVelocity(float vx, float vy)
+        public void SetPlayerDirection(int dir, int moveCount)
         {
-            PlayerInfo playa = new PlayerInfo(PacketTypes.SET);
+            PlayerControl playa = new PlayerControl(PacketTypes.SET);
             playa.id = PlayerName;
-            playa.vx = vx;
-            playa.vy = vy;
+            playa.direction = dir;
+            playa.paces = moveCount;
             byte[] b = NetHelpers.ConvertStructToBytes(playa);
             theStream.Write(b, 0, b.Length);
         }

@@ -14,6 +14,7 @@ namespace Universe
         WorldCell[,] Terrain;
 
         Dictionary<string, Moveable> MoverMap = new Dictionary<string, Moveable>();
+        Dictionary<string, string> PlayerKeyMap = new Dictionary<string, string>();
         List<Moveable> Movers = new List<Moveable>();
         Queue<Moveable> MoverAdd = new Queue<Moveable>();
         Thread MoverThread;
@@ -258,18 +259,23 @@ namespace Universe
             return null;
         }
         
-        public Player GetPlayer(string name)
+        public Player GetPlayer(string name, string key)
         {
             if(MoverMap.ContainsKey(name))
             {
-                WorldObject p = MoverMap[name];
-                if(p.GetType() == typeof(Player))
+                if (PlayerKeyMap.ContainsKey(name) && PlayerKeyMap[name] == key)
                 {
-                    return p as Player;
+
+                    WorldObject p = MoverMap[name];
+                    if (p.GetType() == typeof(Player))
+                    {
+                        return p as Player;
+                    }
                 }
             }
             else
             {
+                PlayerKeyMap.Add(name, key);
                 return CreateNewPlayer(name);
             }
             return null;
