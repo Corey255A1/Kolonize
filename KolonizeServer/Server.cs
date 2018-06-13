@@ -38,6 +38,19 @@ namespace KolonizeServer
             theServer.BeginAcceptTcpClient(ClientConnected, theServer);
         }
 
+        private void ClientStatus(ClientHandler ch, string msg)
+        {
+            if(msg == "Disconnected")
+            {
+                clientList.Remove(ch);
+            }
+            ClientStatusUpdate?.Invoke(ch, msg);
+        }
+
+
+
+
+
         private void MoverUpdated(Moveable m)
         {
             var coord = m.GetPosition();
@@ -55,15 +68,6 @@ namespace KolonizeServer
             {
                 c.SendPacket(b);
             }
-        }
-
-        private void ClientStatus(ClientHandler ch, string msg)
-        {
-            if(msg == "Disconnected")
-            {
-                clientList.Remove(ch);
-            }
-            ClientStatusUpdate?.Invoke(ch, msg);
         }
 
 

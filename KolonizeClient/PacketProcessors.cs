@@ -18,6 +18,7 @@ namespace KolonizeClient
                 //Package the Region Data and Send it
                 case DataTypes.REGION_INFO: ProcessRegionInfo(p, buff); break;
                 case DataTypes.PLAYER_INFO: ProcessPlayerInfo(p, buff); break;
+                case DataTypes.OBJECT_INFO: ProcessObjectInfo(p, buff); break;
                 default: return;
 
             }
@@ -37,7 +38,21 @@ namespace KolonizeClient
                     break;
             }
         }
+        private static void ProcessObjectInfo(PacketTypes p, byte[] buff)
+        {
+            int offset = 0;
+            switch (p)
+            {
+                case PacketTypes.REQUESTED:
+                case PacketTypes.UPDATE:
+                    {
+                        ObjectInfo pi = NetHelpers.ConvertBytesToStruct<ObjectInfo>(buff, ref offset);
+                        //PlayerUpdateEvent?.Invoke(pi);
 
+                    }
+                    break;
+            }
+        }
         private static void ProcessRegionInfo(PacketTypes p, byte[] buff)
         {
             int offset = 0;

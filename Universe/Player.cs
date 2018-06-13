@@ -22,14 +22,18 @@ namespace Universe
             }
             StepsLeft = paces;
         }
-        public override void Move(WorldCell[,] map)
+        public override void Move(WorldCell[,] map, WorldObject[,] objects)
         {
             var pos = GetPosition();
-            base.Move(map);
-            if (pos.x != (int)X || pos.y != (int)Y)
+            base.Move(map, objects);
+            if (StepsLeft > 0)
             {
-                //If we moved, deduct a step
-                if (StepsLeft > 0)
+                if (Vx == 0 && Vy == 0)
+                {
+                    StepsLeft = 0;
+                    return;
+                }
+                if (pos.x != (int)X || pos.y != (int)Y)
                 {
                     if (--StepsLeft == 0)
                     {
@@ -37,6 +41,7 @@ namespace Universe
                     }
                 }
             }
+
             //Else we are a negative number and that means keep moving
         }
     }

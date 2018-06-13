@@ -12,10 +12,14 @@ namespace Universe
     {
         int WORLD_SIZE;
         WorldCell[,] Terrain;
+        WorldObject[,] Objects;
+
+        static Random randomizer = new Random();
 
         Dictionary<string, Moveable> MoverMap = new Dictionary<string, Moveable>();
         Dictionary<string, string> PlayerKeyMap = new Dictionary<string, string>();
         List<Moveable> Movers = new List<Moveable>();
+        
         Queue<Moveable> MoverAdd = new Queue<Moveable>();
         Thread MoverThread;
 
@@ -28,6 +32,7 @@ namespace Universe
         {
             WORLD_SIZE = size;
             Terrain = new WorldCell[WORLD_SIZE, WORLD_SIZE];
+            Objects = new WorldObject[WORLD_SIZE, WORLD_SIZE];
             double[,] rawTerrain = new double[WORLD_SIZE, WORLD_SIZE];
             for (int x=0;x<WORLD_SIZE; ++x)
             {
@@ -78,7 +83,7 @@ namespace Universe
                 sw.Restart();
                 for (i = 0; i < c; i++)
                 {
-                    Movers[i].Move(Terrain);
+                    Movers[i].Move(Terrain, Objects);
                 }
                 sw.Stop();
                 t = 30 - (int)sw.ElapsedMilliseconds;
@@ -217,12 +222,37 @@ namespace Universe
             {
                 int width = x2 - x1;
                 int height = y2 - y1;
-                var region = new WorldCell[width, height];
                 for (int x = 0; x < width; ++x)
                 {
                     for (int y = 0; y < height; ++y)
                     {
                         yield return Terrain[x + x1, y + y1];
+                    }
+                }
+            }
+            yield break;
+        }
+        public IEnumerable<WorldObject> GetRegionObjects(int x1, int x2, int y1, int y2)
+        {
+            //Bound Check
+            if (x1 < 0) x1 = 0;
+            else if (x1 > WORLD_SIZE) x1 = WORLD_SIZE - 2;
+            if (x2 < 0) x2 = 1;
+            else if (x2 > WORLD_SIZE) x2 = WORLD_SIZE - 1;
+            if (y1 < 0) y1 = 0;
+            else if (y1 > WORLD_SIZE) y1 = WORLD_SIZE - 2;
+            if (y2 < 0) y2 = 1;
+            else if (x2 > WORLD_SIZE) y2 = WORLD_SIZE - 1;
+
+            if (x1 < x2 && y1 < y2)
+            {
+                int width = x2 - x1;
+                int height = y2 - y1;
+                for (int x = 0; x < width; ++x)
+                {
+                    for (int y = 0; y < height; ++y)
+                    {
+                        yield return Objects[x + x1, y + y1];
                     }
                 }
             }
@@ -285,12 +315,18 @@ namespace Universe
         {
             int x = 0;
             int y = 0;
-            foreach(var cell in GetCells())
+            int rx = (int)(randomizer.NextDouble() * WORLD_SIZE-100)+50;
+            int ry = (int)(randomizer.NextDouble() * WORLD_SIZE-100)+50;
+
+            foreach (var cell in GetRegionCells(rx-50,rx+50,ry-50,ry+50))
             {
                 if(cell.WorldCellType == CellType.DIRT || cell.WorldCellType == CellType.SAND)
                 {
-                    x = cell.X;
-                    y = cell.Y;
+                    if (Objects[cell.X, cell.Y] == null)
+                    {
+                        x = cell.X;
+                        y = cell.Y;
+                    }
                     break;
                 }
             }
@@ -306,8 +342,9 @@ namespace Universe
             {
                 ((Moveable)wo).PositionUpdated += MoverUpdateEventCB;
                 MoverAdd.Enqueue((Moveable)wo);
-
             }
+            var p = wo.GetPosition();
+            Objects[p.x, p.y] = wo;
         }
     }
 }

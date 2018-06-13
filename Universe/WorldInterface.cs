@@ -22,6 +22,10 @@ namespace Universe
         {
             return theWorld.GetRegionCells(x1, x2, y1, y2);
         }
+        public static IEnumerable<WorldObject> GetRegionObjects(int x1, int x2, int y1, int y2)
+        {
+            return theWorld.GetRegionObjects(x1, x2, y1, y2);
+        }
         public static WorldCell GetCell(int x, int y)
         {
             return theWorld.GetCell(x,y);

@@ -37,7 +37,8 @@ namespace Universe
         public MoverUpdate PositionUpdated;
         protected float Vx = 0;
         protected float Vy = 0;
-
+        protected int NormVx = 0;
+        protected int NormVy = 0;
         protected bool CanSwim = false;
         protected bool CanWalk = true;
         protected bool CanClimb = false;
@@ -50,12 +51,14 @@ namespace Universe
         {
             Vx = vx;
             Vy = vy;
+            NormVx = Vx > 0 ? 1 : Vx < 0 ? -1 : 0;
+            NormVy = Vy > 0 ? 1 : Vy < 0 ? -1 : 0;
         }
         public Vector GetVelocity()
         {
             return new Vector() { x = Vx, y = Vy };
         }
-        public virtual void Move(WorldCell[,] map)
+        public virtual void Move(WorldCell[,] map, WorldObject[,] objects)
         {
             //if we have no velocity, don't move
             if (Vx == 0 && Vy == 0) return;
@@ -65,12 +68,11 @@ namespace Universe
             //Bound Check;
             if(futureX<0 || futureX>map.Length-1 || futureY<0 || futureY>map.Length-1)
             {
-                Vx = 0;
-                Vy = 0;
+                SetVelocity(0, 0);
                 return;
             }
 
-            WorldCell next = map[futureX, futureY];
+            WorldCell next = map[futureX, futureY];            
             bool apply = false;
             switch(next.WorldCellType)
             {
@@ -87,8 +89,21 @@ namespace Universe
                 bool invoke = false;
                 if ((int)X != futureX || (int)Y != futureY)
                 {
-                    //We moved a cell, so tell everyone
-                    invoke = true;                    
+                    //We moved a cell
+                    WorldObject wobj = objects[futureX, futureY];
+                    //Only One Object per Cell!
+                    if (wobj != null)
+                    {
+                        apply = false;
+                        SetVelocity(0, 0);
+                        return;
+                    }
+                    //tell everyone
+                    invoke = true;
+                    //Clear our Current Cell
+                    objects[(int)X, (int)Y] = null;
+                    //Move to our new cell
+                    objects[futureX, futureY] = this;
                 }
                 //update our pos
                 X = (X + Vx);
@@ -98,8 +113,7 @@ namespace Universe
             }
             else
             {
-                Vx = 0;
-                Vy = 0;
+                SetVelocity(0, 0);
             }
            
         }

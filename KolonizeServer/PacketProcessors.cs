@@ -1,4 +1,7 @@
-﻿using System;
+﻿//Corey Wunderlich 2018
+//"Kolonize" Server Packet Processors
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +19,7 @@ namespace KolonizeServer
                 //Package the Region Data and Send it
                 case DataTypes.REGION_INFO: return ProcessRegionInfo(p, buff);
                 case DataTypes.PLAYER_INFO: return ProcessPlayerInfo(p, buff);
+                case DataTypes.OBJECT_INFO: return ProcessObjectInfo(p, buff);
                 case DataTypes.PLAYER_CONTROL: return ProcessPlayerControl(p, buff);
                 default: return null;
 
@@ -66,18 +70,43 @@ namespace KolonizeServer
                                 vy = vel.y
                             };
                             yield return NetHelpers.ConvertStructToBytes(pi);
+
+                            //Send over object positions in the region surrounding our player
+                            //DON'T DO THIS YET... Still thinking about it, Client needs to support it 
+                            //foreach (var obj in WorldInterface.GetRegionObjects(coord.x-10,coord.x+10,coord.y-10,coord.y+10))
+                            //{
+
+                            //    var oc = obj.GetPosition();
+                            //    var oi = new ObjectInfo(PacketTypes.REQUESTED)
+                            //    {
+                            //        id = obj.Id,
+                            //        x = oc.x,
+                            //        y = oc.y,
+                            //        vx = 0,
+                            //        vy = 0,
+                            //    };
+                            //    yield return NetHelpers.ConvertStructToBytes(oi);
+
+                            //}
+
+
                         }
+                        
 
                     }
                     break;
-                //Using Player Control Packet now.
-                //case PacketTypes.SET:
-                //    {
-                //        PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
-                //        Player playa = WorldInterface.GetPlayer(pi.id);
-                //        playa.SetVelocity(pi.vx, pi.vy);                      
-                //        yield break;
-                //    }
+            }
+            yield break;
+        }
+        private static IEnumerable<byte[]> ProcessObjectInfo(PacketTypes p, byte[] buff)
+        {
+            int offset = 0;
+            switch (p)
+            {
+                case PacketTypes.REQUEST:
+                    {
+                    }
+                    break;
             }
             yield break;
         }
