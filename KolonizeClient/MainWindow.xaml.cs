@@ -146,11 +146,6 @@ namespace KolonizeClient
             {
                 WorldCells[cell.x - TopX, cell.y - TopY] = cell.cellType;
             }
-            else
-            {
-                int a = 0;
-                a++;
-            }
         }
 
         private void MyPlayerInfo(PlayerInfo p)
