@@ -89,13 +89,11 @@ namespace KolonizeClient
         }
 
         public void Update(PlayerInfo p)
-        {
-            
+        {            
             Dispatcher.BeginInvoke(new Action(()=> {
                 UpdateLock = true;
                 if (p.id == theClient.PlayerName)
                 {
-                    //DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = CellToBrush(WorldCells[PlayerViewPosX, PlayerViewPosY]);
                     PlayerWorldPosX = p.x;
                     PlayerWorldPosY = p.y;
                     PlayerViewPosX = PlayerWorldPosX - TopX;
@@ -107,10 +105,8 @@ namespace KolonizeClient
                         theClient.GetRegionCells(TopX, TopX + 20, TopY, TopY + 20);                        
                         PlayerViewPosX = PlayerWorldPosX - TopX;
                         PlayerViewPosY = PlayerWorldPosY - TopY;
-                        theClient.RestartAsyncUpdate();
-                    }                    
-                    
-                    //DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
+                    }          
+                  
                 }
                 else
                 {
@@ -164,7 +160,7 @@ namespace KolonizeClient
             TopX = p.x - 10;
             TopY = p.y - 10;
             //Eventually get either a large region or all of the world
-            
+            //Or maybe the server only sends the cells for places the player has been?
             theClient.GetRegionCells(TopX, TopX + 20, TopY, TopY + 20);
 
             PlayerViewPosX = PlayerWorldPosX - TopX;

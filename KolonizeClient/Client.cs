@@ -14,7 +14,8 @@ namespace KolonizeClient
         TcpClient theClient;
         NetworkStream theStream;
         public string PlayerName = "Player1";
-        byte[] respbuff = new byte[1000];
+        byte[] DataBuffer = new byte[1000];
+        int DataReadOffset = 0;
         //bool pauseAsync = false;
         public Client(string playername)
         {
@@ -25,43 +26,42 @@ namespace KolonizeClient
         public void StartAsyncUpdate(PlayerUpdate p)
         {
             PacketProcessors.PlayerUpdateEvent += p;
-            theStream.BeginRead(respbuff, 0, respbuff.Length, ServerRead, this);
+            theStream.BeginRead(DataBuffer, 0, DataBuffer.Length, ServerRead, this);
         }
         public void RestartAsyncUpdate()
         {
-            theStream.BeginRead(respbuff, 0, respbuff.Length, ServerRead, this);
+            theStream.BeginRead(DataBuffer, 0, DataBuffer.Length, ServerRead, this);
         }
         public void ServerRead(IAsyncResult ar)
         {
-            //if (pauseAsync) return;
             try
             {
                 int offset = 0;
                 int prevoffset = offset;
-                int readoffset = 0;
+                
                 int bytes = theStream.EndRead(ar);
                 if (bytes > 0)
                 {
-                    bytes += readoffset;
-                    readoffset = 0;
+                    bytes += DataReadOffset;
+                    DataReadOffset = 0;
                     offset = 0;
                     do
                     {
-                        var packetData = NetHelpers.GetHeaderInfo(respbuff, offset);
+                        var packetData = NetHelpers.GetHeaderInfo(DataBuffer, offset);
                         prevoffset = offset;
-                        if (!PacketProcessors.ProcessPacket(packetData.Item1, packetData.Item2, respbuff, ref offset))
+                        if (!PacketProcessors.ProcessPacket(packetData.Item1, packetData.Item2, DataBuffer, ref offset))
                         {
                             offset = bytes;
                         }
                         else if(prevoffset == offset)
                         {
-                            readoffset = respbuff.Length - offset;
-                            Array.Copy(respbuff, offset, respbuff, 0, readoffset);
+                            DataReadOffset = DataBuffer.Length - offset;
+                            Array.Copy(DataBuffer, offset, DataBuffer, 0, DataReadOffset);
                             offset = bytes;
                         }                        
                     } while (offset < bytes);
                 }
-                theStream.BeginRead(respbuff, readoffset, respbuff.Length - readoffset, ServerRead, this);
+                theStream.BeginRead(DataBuffer, DataReadOffset, DataBuffer.Length - DataReadOffset, ServerRead, this);
             }
             catch (Exception e)
             {

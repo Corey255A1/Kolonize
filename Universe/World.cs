@@ -313,21 +313,24 @@ namespace Universe
 
         public Player CreateNewPlayer(string name)
         {
-            int x = 0;
-            int y = 0;
-            int rx = (int)(randomizer.NextDouble() * WORLD_SIZE-100)+50;
-            int ry = (int)(randomizer.NextDouble() * WORLD_SIZE-100)+50;
-
-            foreach (var cell in GetRegionCells(rx-50,rx+50,ry-50,ry+50))
+            int x = -1;
+            int y = -1;
+            while (x < 0 && y < 0)
             {
-                if(cell.WorldCellType == CellType.DIRT || cell.WorldCellType == CellType.SAND)
+                int rx = (int)(randomizer.NextDouble() * WORLD_SIZE - 100) + 50;
+                int ry = (int)(randomizer.NextDouble() * WORLD_SIZE - 100) + 50;
+
+                foreach (var cell in GetRegionCells(rx - 50, rx + 50, ry - 50, ry + 50))
                 {
-                    if (Objects[cell.X, cell.Y] == null)
+                    if (cell.WorldCellType == CellType.DIRT || cell.WorldCellType == CellType.SAND)
                     {
-                        x = cell.X;
-                        y = cell.Y;
+                        if (Objects[cell.X, cell.Y] == null)
+                        {
+                            x = cell.X;
+                            y = cell.Y;
+                        }
+                        break;
                     }
-                    break;
                 }
             }
             var player = new Player(x, y, name);
