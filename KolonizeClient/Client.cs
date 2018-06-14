@@ -15,7 +15,7 @@ namespace KolonizeClient
         NetworkStream theStream;
         public string PlayerName = "Player1";
         byte[] respbuff = new byte[1000];
-        bool pauseAsync = false;
+        //bool pauseAsync = false;
         public Client(string playername)
         {
             PlayerName = playername;
@@ -33,28 +33,53 @@ namespace KolonizeClient
         }
         public void ServerRead(IAsyncResult ar)
         {
-            if (pauseAsync) return;
+            //if (pauseAsync) return;
             try
             {
+                int offset = 0;
+                int prevoffset = offset;
+                int readoffset = 0;
                 int bytes = theStream.EndRead(ar);
                 if (bytes > 0)
                 {
-                    int off = 0;
-                    var packetData = NetHelpers.GetHeaderInfo(respbuff, ref off);
-                    PacketProcessors.ProcessPacket(packetData.Item1, packetData.Item2, respbuff);
+                    bytes += readoffset;
+                    readoffset = 0;
+                    offset = 0;
+                    do
+                    {
+                        var packetData = NetHelpers.GetHeaderInfo(respbuff, offset);
+                        prevoffset = offset;
+                        if (!PacketProcessors.ProcessPacket(packetData.Item1, packetData.Item2, respbuff, ref offset))
+                        {
+                            offset = bytes;
+                        }
+                        else if(prevoffset == offset)
+                        {
+                            readoffset = respbuff.Length - offset;
+                            Array.Copy(respbuff, offset, respbuff, 0, readoffset);
+                            offset = bytes;
+                        }                        
+                    } while (offset < bytes);
                 }
-                theStream.BeginRead(respbuff, 0, respbuff.Length, ServerRead, this);
+                theStream.BeginRead(respbuff, readoffset, respbuff.Length - readoffset, ServerRead, this);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
             }
         }
+
+        public void RegisterForCellInfo(CellInfoUpdate c)
+        {
+            PacketProcessors.CellInfoUpdateEvent += c;
+        }
+
         //What we should do instead is get a larger region (if not the whole region)
         //Reduce the amount of times the cells need paged in.
-        public List<CellInfo> GetRegionCells(int x1, int x2, int y1, int y2)
+        // public List<CellInfo> GetRegionCells(int x1, int x2, int y1, int y2)
+        public void GetRegionCells(int x1, int x2, int y1, int y2)
         {
-            pauseAsync = true;
+            //pauseAsync = true;
             RegionInfo ri = new RegionInfo(PacketTypes.REQUEST);
             ri.x1 = x1;
             ri.x2 = x2;
@@ -67,57 +92,60 @@ namespace KolonizeClient
 
             theStream.Write(b, 0, b.Length);
             
-            var celllist = new List<CellInfo>();
+            //var celllist = new List<CellInfo>();
             
-            int read = 0;
-            int offset = 0;
-            int readoffset = 0;
-            //Expect CellInfo
-            while (count>0)
-            {
-                read = theStream.Read(respbuff, readoffset, respbuff.Length - readoffset);
-                if(read>0)
-                {
-                    read += readoffset;
-                    readoffset = 0;
-                    offset = 0;
-                    do
-                    {
-                        var cell = NetHelpers.ConvertBytesToStruct<CellInfo>(respbuff, ref offset);
-                        if (cell.header.dataType == (byte)DataTypes.CELL_INFO)
-                        {
-                            count = cell.remainingCells;
-                            celllist.Add(cell);                            
-                        }
-                        else
-                        {
-                            readoffset = respbuff.Length - offset;
-                            Array.Copy(respbuff, offset, respbuff, 0, readoffset);
-                            offset = read;
-                        }
-                    } while (offset < read);
+            //int read = 0;
+            //int offset = 0;
+            //int readoffset = 0;
+            ////Expect CellInfo
+            //while (count>0)
+            //{
+            //    read = theStream.Read(respbuff, readoffset, respbuff.Length - readoffset);
+            //    if(read>0)
+            //    {
+            //        read += readoffset;
+            //        readoffset = 0;
+            //        offset = 0;
+            //        do
+            //        {
+            //            var cell = NetHelpers.ConvertBytesToStruct<CellInfo>(respbuff, ref offset);
+            //            if (cell.header.dataType == (byte)DataTypes.CELL_INFO)
+            //            {
+            //                count = cell.remainingCells;
+            //                celllist.Add(cell);                            
+            //            }
+            //            else
+            //            {
+            //                readoffset = respbuff.Length - offset;
+            //                Array.Copy(respbuff, offset, respbuff, 0, readoffset);
+            //                offset = read;
+            //            }
+            //        } while (offset < read);
                     
-                }                
+            //    }                
 
-            }
-            pauseAsync = false;
-            return celllist;
+            //}
+            //pauseAsync = false;
+            //return celllist;
 
         }
-        public PlayerInfo GetPlayer()
+        //public PlayerInfo GetPlayer()
+        public void GetPlayer(PlayerUpdate p)
         {
+            PacketProcessors.MyPlayerInfoEvent += p;
             PlayerInfo playa = new PlayerInfo(PacketTypes.REQUEST);
             playa.id = PlayerName;
             byte[] b = NetHelpers.ConvertStructToBytes(playa);
             theStream.Write(b, 0, b.Length);
+            
 
-            int read = theStream.Read(respbuff, 0, respbuff.Length);
-            int offset = 0;
-            if(read > 0)
-            {
-                return NetHelpers.ConvertBytesToStruct<PlayerInfo>(respbuff, ref offset);
-            }
-            return playa;
+            //int read = theStream.Read(respbuff, 0, respbuff.Length);
+            //int offset = 0;
+            //if(read > 0)
+            //{
+            //    return NetHelpers.ConvertBytesToStruct<PlayerInfo>(respbuff, ref offset);
+            //}
+            //return playa;
         }
         public void SetPlayerDirection(int dir, int moveCount)
         {

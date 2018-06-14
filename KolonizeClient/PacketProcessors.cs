@@ -8,27 +8,38 @@ using KolonizeNet;
 namespace KolonizeClient
 {
     public delegate void PlayerUpdate(PlayerInfo p);
+    public delegate void CellInfoUpdate(CellInfo c);
     public static class PacketProcessors
     {
         public static PlayerUpdate PlayerUpdateEvent;
-        public static void ProcessPacket(PacketTypes p, DataTypes d, byte[] buff)
+        public static PlayerUpdate MyPlayerInfoEvent;
+        public static CellInfoUpdate CellInfoUpdateEvent;
+
+        public static bool ProcessPacket(PacketTypes p, DataTypes d, byte[] buff, ref int offset)
         {
             switch (d)
             {
                 //Package the Region Data and Send it
-                case DataTypes.REGION_INFO: ProcessRegionInfo(p, buff); break;
-                case DataTypes.PLAYER_INFO: ProcessPlayerInfo(p, buff); break;
-                case DataTypes.OBJECT_INFO: ProcessObjectInfo(p, buff); break;
-                default: return;
+                case DataTypes.CELL_INFO: ProcessCellInfo(p, buff, ref offset); return true;
+                case DataTypes.REGION_INFO: ProcessRegionInfo(p, buff, ref offset); return true;
+                case DataTypes.PLAYER_INFO: ProcessPlayerInfo(p, buff, ref offset); return true;
+                case DataTypes.OBJECT_INFO: ProcessObjectInfo(p, buff, ref offset); return true;
+                default: return false;
 
             }
 
         }
-        private static void ProcessPlayerInfo(PacketTypes p, byte[] buff)
+        private static void ProcessPlayerInfo(PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
+                case PacketTypes.REQUESTED:
+                    {
+                        PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
+                        MyPlayerInfoEvent?.Invoke(pi);
+                        MyPlayerInfoEvent = null;//One Shot
+                    }
+                    break;
                 case PacketTypes.UPDATE:
                     {
                         PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
@@ -38,9 +49,8 @@ namespace KolonizeClient
                     break;
             }
         }
-        private static void ProcessObjectInfo(PacketTypes p, byte[] buff)
+        private static void ProcessObjectInfo(PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
                 case PacketTypes.REQUESTED:
@@ -53,15 +63,26 @@ namespace KolonizeClient
                     break;
             }
         }
-        private static void ProcessRegionInfo(PacketTypes p, byte[] buff)
+        private static void ProcessRegionInfo(PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
                 case PacketTypes.UPDATE:
                     {
                         
                     }break;
+            }
+        }
+        private static void ProcessCellInfo(PacketTypes p, byte[] buff, ref int offset)
+        {
+            switch (p)
+            {
+                case PacketTypes.REQUESTED:
+                    {
+                        CellInfo cell = NetHelpers.ConvertBytesToStruct<CellInfo>(buff, ref offset);
+                        CellInfoUpdateEvent?.Invoke(cell);
+                    }
+                    break;
             }
         }
 

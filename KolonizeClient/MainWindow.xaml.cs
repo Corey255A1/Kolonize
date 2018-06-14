@@ -104,11 +104,7 @@ namespace KolonizeClient
                     {
                         TopX = PlayerWorldPosX - 10;
                         TopY = PlayerWorldPosY - 10;
-                        foreach (var cell in theClient.GetRegionCells(TopX, TopX + 20, TopY, TopY + 20))
-                        {
-                            //DisplayGrid[cell.x - TopX, cell.y - TopY].Fill = CellToBrush(cell.cellType);
-                            WorldCells[cell.x - TopX, cell.y - TopY] = cell.cellType;
-                        }
+                        theClient.GetRegionCells(TopX, TopX + 20, TopY, TopY + 20);                        
                         PlayerViewPosX = PlayerWorldPosX - TopX;
                         PlayerViewPosY = PlayerWorldPosY - TopY;
                         theClient.RestartAsyncUpdate();
@@ -148,25 +144,41 @@ namespace KolonizeClient
             }
         }
 
-        private void connectBtn_Click(object sender, RoutedEventArgs e)
+        private void RxCellInfo(CellInfo cell)
         {
-            theClient = new Client(userNameBox.Text);
-            var p = theClient.GetPlayer();
+            if (cell.x - TopX < 20 && cell.y - TopY < 20 && cell.x - TopX>=0 && cell.y - TopY>=0)
+            {
+                WorldCells[cell.x - TopX, cell.y - TopY] = cell.cellType;
+            }
+            else
+            {
+                int a = 0;
+                a++;
+            }
+        }
+
+        private void MyPlayerInfo(PlayerInfo p)
+        {
             PlayerWorldPosX = p.x;
             PlayerWorldPosY = p.y;
             TopX = p.x - 10;
             TopY = p.y - 10;
             //Eventually get either a large region or all of the world
-            foreach (var cell in theClient.GetRegionCells(TopX, TopX+20, TopY, TopY+20))
-            {
-                DisplayGrid[cell.x - TopX, cell.y - TopY].Fill = CellToBrush(cell.cellType);
-                WorldCells[cell.x - TopX, cell.y - TopY] = cell.cellType;
-            }
-            PlayerViewPosX = PlayerWorldPosX - TopX;
-            PlayerViewPosY = PlayerWorldPosY - TopY;
-            DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
+            
+            theClient.GetRegionCells(TopX, TopX + 20, TopY, TopY + 20);
 
-            theClient.StartAsyncUpdate(Update);            
+            PlayerViewPosX = PlayerWorldPosX - TopX;
+            PlayerViewPosY = PlayerWorldPosY - TopY;          
+
+        }
+
+        private void connectBtn_Click(object sender, RoutedEventArgs e)
+        {
+            theClient = new Client(userNameBox.Text);
+            theClient.RegisterForCellInfo(RxCellInfo);
+            theClient.GetPlayer(MyPlayerInfo);
+            theClient.StartAsyncUpdate(Update);
+
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

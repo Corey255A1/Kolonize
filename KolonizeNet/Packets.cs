@@ -184,7 +184,7 @@ namespace KolonizeNet
             return theStruct;
         }
 
-        public static Tuple<PacketTypes,DataTypes> GetHeaderInfo(byte[] b, ref int offset)
+        public static Tuple<PacketTypes,DataTypes> GetHeaderInfo(byte[] b, int offset)
         {
             return new Tuple<PacketTypes, DataTypes>((PacketTypes)b[offset++], (DataTypes)b[offset++]);
         }
