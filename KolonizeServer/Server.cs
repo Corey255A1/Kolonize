@@ -13,23 +13,23 @@ namespace KolonizeServer
     public class Server
     {
         TcpListener theServer;
+        WorldNetIF theWorldNet;
         List<ClientHandler> clientList = new List<ClientHandler>();
         public ClientUpdate ClientStatusUpdate;
         public Server()
         {
             
             theServer = new TcpListener(IPAddress.Any , 15647);
+            theWorldNet = new WorldNetIF(this);
             theServer.Start();
             theServer.BeginAcceptTcpClient(ClientConnected, theServer);
-            WorldInterface.AddMoverUpdateCB(MoverUpdated);
-        }
-        public void Close()
-        {
-            theServer.Stop();
+
+            WorldInterface.AddMoverUpdateCB(theWorldNet.MoverUpdated);
         }
 
         private void ClientConnected(IAsyncResult ar)
         {
+            if (theServer == null) return;
             TcpClient t = theServer.EndAcceptTcpClient(ar);
             var ch = new ClientHandler(t);
             ch.ClientStatusEvent += ClientStatus;
@@ -37,7 +37,6 @@ namespace KolonizeServer
             ClientStatusUpdate?.Invoke(ch, "Connected");
             theServer.BeginAcceptTcpClient(ClientConnected, theServer);
         }
-
         private void ClientStatus(ClientHandler ch, string msg)
         {
             if(msg == "Disconnected")
@@ -47,28 +46,34 @@ namespace KolonizeServer
             ClientStatusUpdate?.Invoke(ch, msg);
         }
 
-
-
-
-
-        private void MoverUpdated(Moveable m)
+        public void Close()
         {
-            var coord = m.GetPosition();
-            var v = m.GetVelocity();
-            var pi = new PlayerInfo(PacketTypes.UPDATE)
-            {
-                id = m.Id,
-                x = coord.x,
-                y = coord.y,
-                vx = v.x,
-                vy = v.y
-            };
-            byte[] b = NetHelpers.ConvertStructToBytes(pi);
+            theServer.Stop();
+            theServer = null;
+        }
+
+        public void BroadcastToClients(byte[] b)
+        {
             foreach (var c in clientList)
             {
                 c.SendPacket(b);
             }
         }
+        public void SendToPlayer(string playerID, byte[] b)
+        {
+            foreach (var c in clientList)
+            {
+                if(c.PlayerID == playerID)
+                {
+                    c.SendPacket(b);
+                }//Could be more than 1 client per player
+            }
+        }
+
+
+
+
+
 
 
 

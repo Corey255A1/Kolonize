@@ -34,7 +34,7 @@ namespace KolonizeClient
         int PlayerViewPosY = 0;
         int PlayerWorldPosX = 0;
         int PlayerWorldPosY = 0;
-        Dictionary<string, PlayerInfo> OtherPlayers = new Dictionary<string, PlayerInfo>();
+        Dictionary<string, ObjectInfo> OtherObjects = new Dictionary<string, ObjectInfo>();
         DispatcherTimer DrawTimer;
         Client theClient;
         bool UpdateLock = false;
@@ -79,16 +79,16 @@ namespace KolonizeClient
                 }
             }
             DisplayGrid[PlayerViewPosX, PlayerViewPosY].Fill = Brushes.CadetBlue;
-            foreach (var p in OtherPlayers.Values)
+            foreach (var p in OtherObjects.Values)
             {
-                if (p.x > TopX && p.x < TopX + 20 && p.y > TopY && p.y < Top + 20)
+                if (p.x > TopX && p.x < TopX + 20 && p.y > TopY && p.y < TopY + 20)
                 {
                     DisplayGrid[p.x - TopX, p.y - TopY].Fill = Brushes.DarkRed;
                 }
             }
         }
 
-        public void Update(PlayerInfo p)
+        public void Update(ObjectInfo p)
         {            
             Dispatcher.BeginInvoke(new Action(()=> {
                 UpdateLock = true;
@@ -110,13 +110,13 @@ namespace KolonizeClient
                 }
                 else
                 {
-                    if(!OtherPlayers.ContainsKey(p.id))
+                    if(!OtherObjects.ContainsKey(p.id))
                     {
-                        OtherPlayers.Add(p.id, p);
+                        OtherObjects.Add(p.id, p);
                     }
                     else
                     {
-                        OtherPlayers[p.id] = p;
+                        OtherObjects[p.id] = p;
                     }
                 }
                 UpdateLock = false;
@@ -166,9 +166,10 @@ namespace KolonizeClient
         private void connectBtn_Click(object sender, RoutedEventArgs e)
         {
             theClient = new Client(userNameBox.Text);
-            theClient.RegisterForCellInfo(RxCellInfo);
-            theClient.GetPlayer(MyPlayerInfo);
-            theClient.StartAsyncUpdate(Update);
+            theClient.RegisterForCellInfo(RxCellInfo);            
+            theClient.RegisterForPlayerUpdates(MyPlayerInfo);
+            theClient.RegisterForObjectUpdates(Update);
+            theClient.GetPlayerInfo();
 
         }
 

@@ -13,6 +13,8 @@ namespace KolonizeNet
         CELL_INFO,
         PLAYER_INFO,
         PLAYER_CONTROL,
+        PLAYER_ACTION_UPDATE,
+        PLAYER_PERFORM_ACTION,
         OBJECT_INFO
     }
     public static class WorldConstants
@@ -131,7 +133,43 @@ namespace KolonizeNet
             vy = 0;
         }
     }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+    public struct PlayerActionUpdate
+    {
+        public Header header;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string id;
+        public int ActionBitField; //32 Possible Action (for now)
+        public PlayerActionUpdate(PacketTypes p)
+        {
+            header.packetType = (byte)p;
+            header.dataType = (byte)DataTypes.PLAYER_ACTION_UPDATE;
+            id = "";
+            ActionBitField = 0;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
+    public struct PlayerPerformAction
+    {
+        public Header header;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string id;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string key;
+        public int ActionID; //32 Possible Action (for now)
+        public PlayerPerformAction(PacketTypes p)
+        {
+            header.packetType = (byte)p;
+            header.dataType = (byte)DataTypes.PLAYER_PERFORM_ACTION;
+            id = "";
+            key = "";
+            ActionID = 0;
+        }
+    }
+
+     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
     public struct PlayerControl
     {
         public Header header;

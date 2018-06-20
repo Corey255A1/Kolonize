@@ -12,47 +12,42 @@ namespace KolonizeServer
     public class ClientHandler
     {
         public ClientUpdate ClientStatusEvent;
+        public string PlayerID
+        {
+            get
+            {
+                if (theProcessor == null) return "";
+                else return theProcessor.PlayerID;
+            }
+        }
         TcpClient theClient;
-        NetworkStream theStream;
-        byte[] buff = new byte[512];
+        StreamProcessor StreamController;
+        PlayerProcessor theProcessor;
         public ClientHandler(TcpClient t)
         {
             theClient = t;
-            theStream = theClient.GetStream();
-            theStream.BeginRead(buff, 0, buff.Length, ClientRead, this);
+            theProcessor = new PlayerProcessor();
+            StreamController = new StreamProcessor(theClient.GetStream(), theProcessor.ProcessPacket);
+            StreamController.StreamStatusEvent += StreamStatus;
         }
         public override string ToString()
         {
             return theClient.Client.RemoteEndPoint.ToString();
         }
 
-        public void SendPacket(byte[] b)
+        private void StreamStatus(StreamProcessor sp, string msg)
         {
-            theStream.Write(b, 0, b.Length);
+            ClientStatusEvent?.Invoke(this, msg);
         }
-        private void ClientRead(IAsyncResult ar)
+
+        public void SendPacket(byte[] b)
         {
             try
             {
-                int bytes = theStream.EndRead(ar);
-                if (bytes > 0)
-                {
-                    int off = 0;
-                    var packetData = NetHelpers.GetHeaderInfo(buff, off);
-                    foreach (var packet in PacketProcessors.ProcessPacket(packetData.Item1, packetData.Item2, buff))
-                    {
-                        if (packet != null)
-                        {
-                            theStream.Write(packet, 0, packet.Length);
-                        }
-                    }
-
-                }
-                theStream.BeginRead(buff, 0, buff.Length, ClientRead, this);
+                StreamController.StreamWrite(b);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e.ToString());
                 ClientStatusEvent?.Invoke(this, "Disconnected");
             }
         }

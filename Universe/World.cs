@@ -315,10 +315,14 @@ namespace Universe
         {
             int x = -1;
             int y = -1;
-            while (x < 0 && y < 0)
+            //while (x < 0 && y < 0)
             {
-                int rx = (int)(randomizer.NextDouble() * WORLD_SIZE - 100) + 50;
-                int ry = (int)(randomizer.NextDouble() * WORLD_SIZE - 100) + 50;
+                //int rx = (int)(randomizer.NextDouble() * WORLD_SIZE - 100) + 50;
+                //int ry = (int)(randomizer.NextDouble() * WORLD_SIZE - 100) + 50;
+
+                //For Now start players in similar region
+                int rx = 300;
+                int ry = 300;
 
                 foreach (var cell in GetRegionCells(rx - 50, rx + 50, ry - 50, ry + 50))
                 {
@@ -328,8 +332,8 @@ namespace Universe
                         {
                             x = cell.X;
                             y = cell.Y;
-                        }
-                        break;
+                            break;
+                        }                        
                     }
                 }
             }
@@ -341,13 +345,14 @@ namespace Universe
 
         public void AddObject(WorldObject wo)
         {
-            if(wo.GetType() == typeof(Moveable) || wo.GetType() == typeof(Player))
+            var p = wo.GetPosition();
+            Objects[p.x, p.y] = wo;
+            if (wo.GetType() == typeof(Moveable) || wo.GetType() == typeof(Player))
             {
                 ((Moveable)wo).PositionUpdated += MoverUpdateEventCB;
                 MoverAdd.Enqueue((Moveable)wo);
             }
-            var p = wo.GetPosition();
-            Objects[p.x, p.y] = wo;
+
         }
     }
 }

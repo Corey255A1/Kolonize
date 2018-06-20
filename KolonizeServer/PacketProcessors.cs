@@ -10,27 +10,27 @@ using KolonizeNet;
 using Universe;
 namespace KolonizeServer
 {
-    public static class PacketProcessors
+    public class PlayerProcessor
     {
-        public static IEnumerable<byte[]> ProcessPacket(PacketTypes p, DataTypes d, byte[] buff)
+        public string PlayerID = "";
+
+        public bool ProcessPacket(StreamWriter s, PacketTypes p, DataTypes d, byte[] buff, ref int offset)
         {
             switch (d)
             {
                 //Package the Region Data and Send it
-                case DataTypes.REGION_INFO: return ProcessRegionInfo(p, buff);
-                case DataTypes.PLAYER_INFO: return ProcessPlayerInfo(p, buff);
-                case DataTypes.OBJECT_INFO: return ProcessObjectInfo(p, buff);
-                case DataTypes.PLAYER_CONTROL: return ProcessPlayerControl(p, buff);
-                default: return null;
+                case DataTypes.REGION_INFO: return ProcessRegionInfo(s, p, buff, ref offset);
+                case DataTypes.PLAYER_INFO: return ProcessPlayerInfo(s, p, buff, ref offset);
+                case DataTypes.OBJECT_INFO: return ProcessObjectInfo(s, p, buff, ref offset);
+                case DataTypes.PLAYER_CONTROL: return ProcessPlayerControl(s, p, buff, ref offset);
+                default: return false;
 
             }
 
         }
 
-
-        private static IEnumerable<byte[]> ProcessPlayerControl(PacketTypes p, byte[] buff)
+        private bool ProcessPlayerControl(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
                     //Using Player Control Packet now.
@@ -41,16 +41,13 @@ namespace KolonizeServer
                         if (playa != null)
                         {
                             playa.SetDirection(pi.direction, pi.paces);
-                        }
-                        yield break;
-                        }
+                        }                        
+                        }return true;
             }
-            yield break;
+            return false;
         }
-
-        private static IEnumerable<byte[]> ProcessPlayerInfo(PacketTypes p, byte[] buff)
+        private bool ProcessPlayerInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
                 case PacketTypes.REQUEST:
@@ -59,6 +56,7 @@ namespace KolonizeServer
                         Player playa = WorldInterface.GetPlayer(pi.id, pi.key);
                         if (playa != null)
                         {
+                            PlayerID = pi.id;
                             var coord = playa.GetPosition();
                             var vel = playa.GetVelocity();
                             pi = new PlayerInfo(PacketTypes.REQUESTED)
@@ -69,7 +67,8 @@ namespace KolonizeServer
                                 vx = vel.x,
                                 vy = vel.y
                             };
-                            yield return NetHelpers.ConvertStructToBytes(pi);
+                            s(NetHelpers.ConvertStructToBytes(pi));
+                            
 
                             //Send over object positions in the region surrounding our player
                             //DON'T DO THIS YET... Still thinking about it, Client needs to support it 
@@ -91,29 +90,25 @@ namespace KolonizeServer
 
 
                         }
-                        
-
+                        return true;
                     }
-                    break;
             }
-            yield break;
+            return false;
         }
-        private static IEnumerable<byte[]> ProcessObjectInfo(PacketTypes p, byte[] buff)
+        private bool ProcessObjectInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
                 case PacketTypes.REQUEST:
                     {
                     }
-                    break;
+                    return true;
             }
-            yield break;
+            return false;
         }
 
-        private static IEnumerable<byte[]> ProcessRegionInfo(PacketTypes p, byte[] buff)
+        private bool ProcessRegionInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
         {
-            int offset = 0;
             switch (p)
             {
                 case PacketTypes.REQUEST:
@@ -128,12 +123,13 @@ namespace KolonizeServer
                             c.remainingCells = --count;
                             c.x = wc.X;
                             c.y = wc.Y;
-                            
-                            yield return NetHelpers.ConvertStructToBytes(c);
+
+                            s(NetHelpers.ConvertStructToBytes(c));
                         }
-                    }break;
+                        return true;
+                    }
             }
-            yield break;
+            return false;
         }
 
     }
