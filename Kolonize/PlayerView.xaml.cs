@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Universe;
+using Universe.Objects;
 namespace Kolonize
 {
     /// <summary>

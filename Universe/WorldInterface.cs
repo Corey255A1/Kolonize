@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Universe.Objects;
 namespace Universe
 {
     public static class WorldInterface
     {
         public static World theWorld;
-
+        public static int WORLD_SIZE
+        {
+            get {
+                if (theWorld != null) return theWorld.WORLD_SIZE;
+                else return 0;
+            }
+        }
         public static void InitializeWorld(int size)
         {
             theWorld = new World(size);
@@ -35,6 +41,11 @@ namespace Universe
             return theWorld.GetRegion(x1, x2, y1, y2);
         }
 
+        public static bool IsObjectNull(int x, int y)
+        {
+            return theWorld.GetObject(x, y) == null;
+        }
+
         public static void AddObject(WorldObject wo)
         {
             theWorld.AddObject(wo);
@@ -44,9 +55,17 @@ namespace Universe
         {
             return theWorld.GetPlayer(name,key);
         }
+        public static void PerformAction(string name, string key, int action)
+        {
+            theWorld.PerformPlayerAction(name, key, action);
+        }
         public static void AddMoverUpdateCB(MoverUpdate m)
         {
             theWorld.MoverUpdateEvent += m;
+        }
+        public static void AddObjectCreatedCB(ObjectStatus o)
+        {
+            theWorld.ObjectAdded += o;
         }
     }
 }

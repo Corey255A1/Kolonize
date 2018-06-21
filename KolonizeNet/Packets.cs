@@ -27,7 +27,13 @@ namespace KolonizeNet
         public const byte LAVA = 5;
         public const byte ICE = 6;
 
+        public const int TYPE_GENERIC = 0;
+        public const int TYPE_MOVEABLE = 1;
+        public const int TYPE_PLAYER = 2;
+        public const int TYPE_MARKER = 3;
+
     }
+
 
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
     public struct Header

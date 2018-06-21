@@ -70,5 +70,14 @@ namespace KolonizeClient
             StreamController.StreamWrite(b);
         }
 
+        public void CreateMarker()
+        {
+            PlayerPerformAction p = new PlayerPerformAction(PacketTypes.SET);
+            p.id = PlayerName;
+            p.key = "";
+            p.ActionID = 0;
+            StreamController.StreamWrite(NetHelpers.ConvertStructToBytes(p));
+        }
+
     }
 }

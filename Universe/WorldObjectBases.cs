@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Universe
 {
+
+    public enum WorldObjectTypes { GENERIC, MOVEABLE, PLAYER, MARKER }
+
     public struct Coord
     {
         public int x;
@@ -23,9 +26,11 @@ namespace Universe
         protected double Y = 0;
         protected int Size = 1;
         public string Id = "";
+        public WorldObjectTypes ObjectType;
         public WorldObject(int x, int y, string id, int size=1)
         {
             X = x; Y = y; Size = size; Id = id;
+            ObjectType = WorldObjectTypes.GENERIC;
         }
         public Coord GetPosition()
         {
@@ -38,14 +43,17 @@ namespace Universe
         public MoverUpdate PositionUpdated;
         protected float Vx = 0;
         protected float Vy = 0;
+        protected int Heading = 0;
         protected float MAX_SPEED = 0.1f;
         protected int NormVx = 0;
         protected int NormVy = 0;
         protected bool CanSwim = false;
         protected bool CanWalk = true;
         protected bool CanClimb = false;
-
-        public Moveable(int x, int y, string  id, int size = 1) : base(x, y, id, size) { }
+        public Moveable(int x, int y, string  id, int size = 1) : base(x, y, id, size)
+        {
+            ObjectType = WorldObjectTypes.MOVEABLE;
+        }
 
         private int futureX=0;
         private int futureY=0;

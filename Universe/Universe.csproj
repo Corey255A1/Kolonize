@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Objects\KolonyMarker.cs" />
     <Compile Include="WorldInterface.cs" />
     <Compile Include="WorldObjectBases.cs" />
     <Compile Include="Objects\Player.cs" />

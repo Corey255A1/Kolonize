@@ -83,7 +83,15 @@ namespace KolonizeClient
             {
                 if (p.x > TopX && p.x < TopX + 20 && p.y > TopY && p.y < TopY + 20)
                 {
-                    DisplayGrid[p.x - TopX, p.y - TopY].Fill = Brushes.DarkRed;
+                    //Make this like the CellToBrush
+                    Brush brush;
+                    if (p.objecttype == WorldConstants.TYPE_MARKER)
+                        brush = Brushes.Chocolate;
+                    else if (p.objecttype == WorldConstants.TYPE_PLAYER)
+                        brush = Brushes.DarkRed;
+                    else
+                        brush = Brushes.DarkGoldenrod;
+                    DisplayGrid[p.x - TopX, p.y - TopY].Fill = brush;
                 }
             }
         }
@@ -187,6 +195,8 @@ namespace KolonizeClient
                         theClient.SetPlayerDirection(3,1); break;
                     case Key.D:
                         theClient.SetPlayerDirection(1,1); break;
+                    case Key.L:
+                        theClient.CreateMarker(); break;
                 }
             }
         }

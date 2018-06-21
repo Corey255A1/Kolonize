@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using Universe.Objects;
 namespace Universe
 {
     public delegate void MoverUpdate(Moveable m);
+    public delegate void ObjectStatus(WorldObject o);
     public class World
     {
-        int WORLD_SIZE;
+        public readonly int WORLD_SIZE;
         WorldCell[,] Terrain;
         WorldObject[,] Objects;
 
@@ -24,7 +26,7 @@ namespace Universe
         Thread MoverThread;
 
         public MoverUpdate MoverUpdateEvent;
-
+        public ObjectStatus ObjectAdded;
         static bool MoverThreadActive = true;
 
 
@@ -262,6 +264,10 @@ namespace Universe
         {
             return Terrain[x, y];
         }
+        public WorldObject GetObject(int x, int y)
+        {
+            return Objects[x, y];
+        }
         public WorldCell[,] GetRegion(int x1, int x2, int y1, int y2)
         {
             if (x1 < 0) x1 = 0;
@@ -288,7 +294,19 @@ namespace Universe
             }
             return null;
         }
-        
+        public void AddObject(WorldObject wo)
+        {
+            var p = wo.GetPosition();
+            Objects[p.x, p.y] = wo;
+            if (wo.GetType() == typeof(Moveable) || wo.GetType() == typeof(Player))
+            {
+                ((Moveable)wo).PositionUpdated += MoverUpdateEventCB;
+                MoverAdd.Enqueue((Moveable)wo);
+            }
+            ObjectAdded?.Invoke(wo);
+
+        }
+        #region Player
         public Player GetPlayer(string name, string key)
         {
             if(MoverMap.ContainsKey(name))
@@ -310,7 +328,6 @@ namespace Universe
             }
             return null;
         }
-
         public Player CreateNewPlayer(string name)
         {
             int x = -1;
@@ -342,17 +359,15 @@ namespace Universe
             AddObject(player);
             return player;
         }
-
-        public void AddObject(WorldObject wo)
+        public void PerformPlayerAction(string name, string key, int action)
         {
-            var p = wo.GetPosition();
-            Objects[p.x, p.y] = wo;
-            if (wo.GetType() == typeof(Moveable) || wo.GetType() == typeof(Player))
+            Player p = GetPlayer(name, key);
+            if(p!=null)
             {
-                ((Moveable)wo).PositionUpdated += MoverUpdateEventCB;
-                MoverAdd.Enqueue((Moveable)wo);
+                p.PerformAction(action);
             }
-
         }
+        #endregion
+
     }
 }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using KolonizeNet;
 using Universe;
+using Universe.Objects;
 namespace KolonizeServer
 {
     public class PlayerProcessor
@@ -45,6 +46,12 @@ namespace KolonizeServer
                             ProcessPlayerControl(s, p, oi);
                             return true;
                         }
+                    case DataTypes.PLAYER_PERFORM_ACTION:
+                        {
+                            PlayerPerformAction oi = NetHelpers.ConvertBytesToStruct<PlayerPerformAction>(buff, ref offset);
+                            ProcessPlayerAction(s, p, oi);
+                            return true;
+                        }
                     default:
                         return false;
 
@@ -74,6 +81,18 @@ namespace KolonizeServer
             }
             return false;
         }
+        private bool ProcessPlayerAction(StreamWriter s, PacketTypes p, PlayerPerformAction pi)
+        {
+            switch (p)
+            {
+                case PacketTypes.SET:
+                    {
+                        WorldInterface.PerformAction(pi.id, pi.key, pi.ActionID);
+                        return true;
+                    }
+            }
+            return false;
+        }
         private bool ProcessPlayerInfo(StreamWriter s, PacketTypes p, PlayerInfo pi)
         {
             switch (p)
@@ -95,27 +114,26 @@ namespace KolonizeServer
                                 vy = vel.y
                             };
                             s(NetHelpers.ConvertStructToBytes(pi));
-                            
+
 
                             //Send over object positions in the region surrounding our player
                             //DON'T DO THIS YET... Still thinking about it, Client needs to support it 
-                            //foreach (var obj in WorldInterface.GetRegionObjects(coord.x-10,coord.x+10,coord.y-10,coord.y+10))
-                            //{
+                            foreach (var obj in WorldInterface.GetRegionObjects(coord.x - 10, coord.x + 10, coord.y - 10, coord.y + 10))
+                            {
+                                if (obj == null) continue;
+                                var oc = obj.GetPosition();
+                                var oi = new ObjectInfo(PacketTypes.REQUESTED)
+                                {
+                                    id = obj.Id,
+                                    objecttype = (int)obj.ObjectType,
+                                    x = oc.x,
+                                    y = oc.y,
+                                    vx = 0,
+                                    vy = 0,
+                                };
+                                s(NetHelpers.ConvertStructToBytes(oi));
 
-                            //    var oc = obj.GetPosition();
-                            //    var oi = new ObjectInfo(PacketTypes.REQUESTED)
-                            //    {
-                            //        id = obj.Id,
-                            //        x = oc.x,
-                            //        y = oc.y,
-                            //        vx = 0,
-                            //        vy = 0,
-                            //    };
-                            //    yield return NetHelpers.ConvertStructToBytes(oi);
-
-                            //}
-
-
+                            }
                         }
                         return true;
                     }

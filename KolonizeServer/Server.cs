@@ -25,6 +25,7 @@ namespace KolonizeServer
             theServer.BeginAcceptTcpClient(ClientConnected, theServer);
 
             WorldInterface.AddMoverUpdateCB(theWorldNet.MoverUpdated);
+            WorldInterface.AddObjectCreatedCB(theWorldNet.ObjectAdded);
         }
 
         private void ClientConnected(IAsyncResult ar)

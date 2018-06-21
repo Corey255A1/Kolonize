@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Universe;
+using Universe.Objects;
 using KolonizeNet;
 namespace KolonizeServer
 {
@@ -40,7 +41,7 @@ namespace KolonizeServer
             var pi = new ObjectInfo(PacketTypes.UPDATE)
             {
                 id = m.Id,
-                objecttype = 0,//Currently only Players
+                objecttype = (int)m.ObjectType,
                 x = coord.x,
                 y = coord.y,
                 vx = v.x,
@@ -48,6 +49,19 @@ namespace KolonizeServer
             };
             Net.BroadcastToClients(NetHelpers.ConvertStructToBytes(pi));
 
+        }
+        public void ObjectAdded(WorldObject o)
+        {
+            //At Some point restrict to only updates around players
+            var coord = o.GetPosition();
+            var pi = new ObjectInfo(PacketTypes.UPDATE)
+            {
+                id = o.Id,
+                objecttype = (int)o.ObjectType,
+                x = coord.x,
+                y = coord.y,
+            };
+            Net.BroadcastToClients(NetHelpers.ConvertStructToBytes(pi));
         }
     }
 }
