@@ -18,47 +18,72 @@ namespace KolonizeClient
 
         public static bool ProcessPacket(StreamWriter s, PacketTypes p, DataTypes d, byte[] buff, ref int offset)
         {
-            switch (d)
+            try
             {
-                //Package the Region Data and Send it
-                case DataTypes.CELL_INFO: ProcessCellInfo(s, p, buff, ref offset); return true;
-                case DataTypes.REGION_INFO: ProcessRegionInfo(s, p, buff, ref offset); return true;
-                case DataTypes.PLAYER_INFO: ProcessPlayerInfo(s, p, buff, ref offset); return true;
-                case DataTypes.OBJECT_INFO: ProcessObjectInfo(s, p, buff, ref offset); return true;
-                default: return false;
+                switch (d)
+                {
+                    //Package the Region Data and Send it
+                    case DataTypes.CELL_INFO:
+                        {
+                            CellInfo ci = NetHelpers.ConvertBytesToStruct<CellInfo>(buff, ref offset);
+                            ProcessCellInfo(s, p, ci);
+                            return true;
+                        }
+                    case DataTypes.REGION_INFO:
+                        {
+                            RegionInfo ri = NetHelpers.ConvertBytesToStruct<RegionInfo>(buff, ref offset);
+                            ProcessRegionInfo(s, p, ri);
+                            return true;
+                        }
+                    case DataTypes.PLAYER_INFO:
+                        {
+                            PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
+                            ProcessPlayerInfo(s, p, pi);
+                            return true;
+                        }
+                    case DataTypes.OBJECT_INFO:
+                        {
+                            ObjectInfo pi = NetHelpers.ConvertBytesToStruct<ObjectInfo>(buff, ref offset);
+                            ProcessObjectInfo(s, p, pi);
+                            return true;
+                        }
+                    default:
+                        return false;
 
+                }
+            }
+            catch
+            {
+                //Convert Bytes throws an exception if there isn't enough bytes to convert
+                return false;
             }
 
         }
-        private static void ProcessPlayerInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private static void ProcessPlayerInfo(StreamWriter s, PacketTypes p, PlayerInfo pi)
         {
             switch (p)
             {               
                 case PacketTypes.REQUESTED:
                 case PacketTypes.UPDATE:
-                    {
-                        PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
+                    {                        
                         PlayerUpdateEvent?.Invoke(pi);
-
                     }
                     break;
             }
         }
-        private static void ProcessObjectInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private static void ProcessObjectInfo(StreamWriter s, PacketTypes p, ObjectInfo pi)
         {
             switch (p)
             {
                 case PacketTypes.REQUESTED:
                 case PacketTypes.UPDATE:
-                    {
-                        ObjectInfo pi = NetHelpers.ConvertBytesToStruct<ObjectInfo>(buff, ref offset);
+                    {                                                
                         ObjectUpdateEvent?.Invoke(pi);
-
                     }
                     break;
             }
         }
-        private static void ProcessRegionInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private static void ProcessRegionInfo(StreamWriter s, PacketTypes p, RegionInfo ri)
         {
             switch (p)
             {
@@ -68,14 +93,14 @@ namespace KolonizeClient
                     }break;
             }
         }
-        private static void ProcessCellInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private static void ProcessCellInfo(StreamWriter s, PacketTypes p, CellInfo o)
         {
             switch (p)
             {
                 case PacketTypes.REQUESTED:
                     {
-                        CellInfo cell = NetHelpers.ConvertBytesToStruct<CellInfo>(buff, ref offset);
-                        CellInfoUpdateEvent?.Invoke(cell);
+                        
+                        CellInfoUpdateEvent?.Invoke(o);
                     }
                     break;
             }

@@ -16,43 +16,70 @@ namespace KolonizeServer
 
         public bool ProcessPacket(StreamWriter s, PacketTypes p, DataTypes d, byte[] buff, ref int offset)
         {
-            switch (d)
+            try
             {
-                //Package the Region Data and Send it
-                case DataTypes.REGION_INFO: return ProcessRegionInfo(s, p, buff, ref offset);
-                case DataTypes.PLAYER_INFO: return ProcessPlayerInfo(s, p, buff, ref offset);
-                case DataTypes.OBJECT_INFO: return ProcessObjectInfo(s, p, buff, ref offset);
-                case DataTypes.PLAYER_CONTROL: return ProcessPlayerControl(s, p, buff, ref offset);
-                default: return false;
+                switch (d)
+                {
+                    //Package the Region Data and Send it
+                    case DataTypes.REGION_INFO:
+                        {
+                            RegionInfo ri = NetHelpers.ConvertBytesToStruct<RegionInfo>(buff, ref offset);
+                            ProcessRegionInfo(s, p, ri);
+                            return true;
+                        }
+                    case DataTypes.PLAYER_INFO:
+                        {
+                            PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
+                            ProcessPlayerInfo(s, p, pi);
+                            return true;
+                        }
+                    case DataTypes.OBJECT_INFO:
+                        {
+                            ObjectInfo oi = NetHelpers.ConvertBytesToStruct<ObjectInfo>(buff, ref offset);
+                            ProcessObjectInfo(s, p, oi);
+                            return true;
+                        }
+                    case DataTypes.PLAYER_CONTROL:
+                        {
+                            PlayerControl oi = NetHelpers.ConvertBytesToStruct<PlayerControl>(buff, ref offset);
+                            ProcessPlayerControl(s, p, oi);
+                            return true;
+                        }
+                    default:
+                        return false;
 
+                }
+            }
+            catch
+            {
+                //Convert Bytes throws an exception if there isn't enough bytes to convert
+                return false;
             }
 
         }
 
-        private bool ProcessPlayerControl(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private bool ProcessPlayerControl(StreamWriter s, PacketTypes p, PlayerControl pi)
         {
             switch (p)
             {
-                    //Using Player Control Packet now.
                     case PacketTypes.SET:
                         {
-                        PlayerControl pi = NetHelpers.ConvertBytesToStruct<PlayerControl>(buff, ref offset);
-                        Player playa = WorldInterface.GetPlayer(pi.id, pi.key);
-                        if (playa != null)
-                        {
-                            playa.SetDirection(pi.direction, pi.paces);
-                        }                        
-                        }return true;
+                            Player playa = WorldInterface.GetPlayer(pi.id, pi.key);
+                            if (playa != null)
+                            {
+                                playa.SetDirection(pi.direction, pi.paces);
+                            }
+                        return true;
+                        }
             }
             return false;
         }
-        private bool ProcessPlayerInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private bool ProcessPlayerInfo(StreamWriter s, PacketTypes p, PlayerInfo pi)
         {
             switch (p)
             {
                 case PacketTypes.REQUEST:
-                    {
-                        PlayerInfo pi = NetHelpers.ConvertBytesToStruct<PlayerInfo>(buff, ref offset);
+                    {                        
                         Player playa = WorldInterface.GetPlayer(pi.id, pi.key);
                         if (playa != null)
                         {
@@ -95,7 +122,7 @@ namespace KolonizeServer
             }
             return false;
         }
-        private bool ProcessObjectInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private bool ProcessObjectInfo(StreamWriter s, PacketTypes p, ObjectInfo oi)
         {
             switch (p)
             {
@@ -106,14 +133,12 @@ namespace KolonizeServer
             }
             return false;
         }
-
-        private bool ProcessRegionInfo(StreamWriter s, PacketTypes p, byte[] buff, ref int offset)
+        private bool ProcessRegionInfo(StreamWriter s, PacketTypes p, RegionInfo ri)
         {
             switch (p)
             {
                 case PacketTypes.REQUEST:
-                    {
-                        RegionInfo ri = NetHelpers.ConvertBytesToStruct<RegionInfo>(buff, ref offset);
+                    {                        
                         CellInfo c = new CellInfo(PacketTypes.REQUESTED);
                         List<WorldCell> region = new List<WorldCell>(WorldInterface.GetRegionCells(ri.x1, ri.x2, ri.y1, ri.y2));
                         int count = region.Count;

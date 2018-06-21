@@ -6,6 +6,16 @@ using System.Threading.Tasks;
 
 namespace Universe
 {
+    public struct Coord
+    {
+        public int x;
+        public int y;
+    }
+    public struct Vector
+    {
+        public float x;
+        public float y;
+    }
 
     public class WorldObject
     {
@@ -22,21 +32,13 @@ namespace Universe
             return new Coord() { x = (int)X, y = (int)Y };
         }
     }
-    public struct Coord
-    {
-        public int x;
-        public int y;
-    }
-    public struct Vector
-    {
-        public float x;
-        public float y;
-    }
+
     public class Moveable : WorldObject
     {
         public MoverUpdate PositionUpdated;
         protected float Vx = 0;
         protected float Vy = 0;
+        protected float MAX_SPEED = 0.1f;
         protected int NormVx = 0;
         protected int NormVy = 0;
         protected bool CanSwim = false;

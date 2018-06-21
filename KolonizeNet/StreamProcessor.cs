@@ -52,10 +52,6 @@ namespace KolonizeNet
                         prevoffset = offset;
                         if (!theProcessor(StreamWrite, packetData.Item1, packetData.Item2, DataBuffer, ref offset))
                         {
-                            offset = bytes;
-                        }
-                        else if (prevoffset == offset)
-                        {
                             DataReadOffset = DataBuffer.Length - offset;
                             Array.Copy(DataBuffer, offset, DataBuffer, 0, DataReadOffset);
                             offset = bytes;

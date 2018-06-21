@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="WorldInterface.cs" />
     <Compile Include="WorldObjectBases.cs" />
-    <Compile Include="Player.cs" />
+    <Compile Include="Objects\Player.cs" />
     <Compile Include="World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorldCell.cs" />

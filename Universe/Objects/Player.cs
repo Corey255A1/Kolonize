@@ -8,17 +8,21 @@ namespace Universe
 {
     public class Player : Moveable
     {
-        public Player(int x, int y, string id, int size = 1) : base(x, y, id, size) { }
+        public Player(int x, int y, string id, int size = 1) : base(x, y, id, size)
+        {
+            MAX_SPEED = 0.2f;
+        }
         private int StepsLeft = -1;
+        
         public void SetDirection(int dir, int paces)
         {
             switch(dir)
             {
                 case -1: SetVelocity(0, 0); break;
-                case 0: SetVelocity(0, -.1f); break;
-                case 1: SetVelocity(.1f, 0); break;
-                case 2: SetVelocity(0, .1f); break;
-                case 3: SetVelocity(-.1f, 0); break;
+                case 0: SetVelocity(0, -MAX_SPEED); break;
+                case 1: SetVelocity(MAX_SPEED, 0); break;
+                case 2: SetVelocity(0, MAX_SPEED); break;
+                case 3: SetVelocity(-MAX_SPEED, 0); break;
             }
             StepsLeft = paces;
         }

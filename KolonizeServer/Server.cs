@@ -29,13 +29,19 @@ namespace KolonizeServer
 
         private void ClientConnected(IAsyncResult ar)
         {
-            if (theServer == null) return;
-            TcpClient t = theServer.EndAcceptTcpClient(ar);
-            var ch = new ClientHandler(t);
-            ch.ClientStatusEvent += ClientStatus;
-            clientList.Add(ch);
-            ClientStatusUpdate?.Invoke(ch, "Connected");
-            theServer.BeginAcceptTcpClient(ClientConnected, theServer);
+            try
+            {
+                TcpClient t = theServer.EndAcceptTcpClient(ar);
+                var ch = new ClientHandler(t);
+                ch.ClientStatusEvent += ClientStatus;
+                clientList.Add(ch);
+                ClientStatusUpdate?.Invoke(ch, "Connected");
+                theServer.BeginAcceptTcpClient(ClientConnected, theServer);
+            }
+            catch
+            {
+                Console.WriteLine("Something weird happened");
+            }
         }
         private void ClientStatus(ClientHandler ch, string msg)
         {

@@ -219,6 +219,10 @@ namespace KolonizeNet
                 theStruct = (T)Marshal.PtrToStructure(ptr, theStruct.GetType());
                 Marshal.FreeHGlobal(ptr);                
             }
+            else
+            {
+                throw new Exception("Not Enough Bytes Left");
+            }
             return theStruct;
         }
 
