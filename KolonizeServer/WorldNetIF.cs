@@ -14,6 +14,10 @@ namespace KolonizeServer
         public WorldNetIF(Server s)
         {
             Net = s;
+
+            WorldInterface.AddMoverUpdateCB(MoverUpdated);
+            WorldInterface.AddObjectCreatedCB(ObjectAdded);
+
         }
 
         public void PlayerUpdated(Player p)
