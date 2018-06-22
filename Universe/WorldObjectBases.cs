@@ -40,6 +40,7 @@ namespace Universe
 
     public class Moveable : WorldObject
     {
+        public enum Direction { STOP = -1, UP, RIGHT, DOWN, LEFT }
         public MoverUpdate PositionUpdated;
         protected float Vx = 0;
         protected float Vy = 0;
@@ -57,7 +58,19 @@ namespace Universe
 
         private int futureX=0;
         private int futureY=0;
-        public void SetVelocity(float vx, float vy)
+        public void SetDirection(Direction dir, float speed)
+        {
+            speed = Math.Abs(speed);// In case someone tries to be sneaky
+            switch(dir)
+            {
+                case Direction.STOP: SetVelocity(0, 0); break;
+                case Direction.UP: SetVelocity(0, -speed); Heading = 0; break;
+                case Direction.RIGHT: SetVelocity(speed, 0); Heading = 1; break;
+                case Direction.DOWN: SetVelocity(0, speed); Heading = 2; break;
+                case Direction.LEFT: SetVelocity(-speed, 0); Heading = 3; break;
+            }
+        }
+        protected void SetVelocity(float vx, float vy)
         {
             Vx = vx;
             Vy = vy;

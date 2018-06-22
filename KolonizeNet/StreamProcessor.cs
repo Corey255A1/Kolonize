@@ -48,14 +48,24 @@ namespace KolonizeNet
                     offset = 0;
                     do
                     {
-                        var packetData = NetHelpers.GetHeaderInfo(DataBuffer, offset);
-                        prevoffset = offset;
-                        if (!theProcessor(StreamWrite, packetData.Item1, packetData.Item2, DataBuffer, ref offset))
+                        if(DataBuffer.Length - offset > 2)//2 is Header Size Currently...
+                        {
+                            var packetData = NetHelpers.GetHeaderInfo(DataBuffer, offset);
+                            prevoffset = offset;
+                            if (!theProcessor(StreamWrite, packetData.Item1, packetData.Item2, DataBuffer, ref offset))
+                            {
+                                DataReadOffset = DataBuffer.Length - offset;
+                                Array.Copy(DataBuffer, offset, DataBuffer, 0, DataReadOffset);
+                                offset = bytes;
+                            }
+                        }
+                        else
                         {
                             DataReadOffset = DataBuffer.Length - offset;
                             Array.Copy(DataBuffer, offset, DataBuffer, 0, DataReadOffset);
                             offset = bytes;
                         }
+
                     } while (offset < bytes);
                 }
                 theStream.BeginRead(DataBuffer, DataReadOffset, BUFFER_SIZE - DataReadOffset, StreamRead, this);

@@ -6,10 +6,22 @@
         xmlns:local="clr-namespace:KolonizeClient"
         mc:Ignorable="d"
         Title="Kolonize Client" Height="512" Width="756" PreviewKeyDown="Window_PreviewKeyDown">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Textures.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Canvas x:Name="drawCanvas" HorizontalAlignment="Left" Height="450" VerticalAlignment="Top" Width="600" Margin="138,10,0,0"/>
-        <Button x:Name="connectBtn" Content="Connect" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="76" Click="connectBtn_Click"/>
-        <TextBox x:Name="userNameBox" HorizontalAlignment="Left" Height="23" Margin="10,35,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="76" RenderTransformOrigin="0.431,-1.696"/>
+        <Button x:Name="connectBtn" Content="Connect" HorizontalAlignment="Left" Margin="10,174,0,0" VerticalAlignment="Top" Width="76" Click="connectBtn_Click"/>
+        <TextBox x:Name="userNameBox" HorizontalAlignment="Left" Height="23" Margin="10,36,0,0" TextWrapping="Wrap" Text="Player1" VerticalAlignment="Top" Width="76" RenderTransformOrigin="0.431,-1.696"/>
+        <TextBox x:Name="serverBox" HorizontalAlignment="Left" Height="23" Margin="10,144,0,0" TextWrapping="Wrap" Text="localhost" VerticalAlignment="Top" Width="76" RenderTransformOrigin="0.431,-1.696"/>
+        <Label Content="User Name" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="76"/>
+        <Label Content="Server" HorizontalAlignment="Left" Margin="10,118,0,0" VerticalAlignment="Top" Width="76"/>
+        <PasswordBox x:Name="passwordBox" HorizontalAlignment="Left" Height="23" Margin="10,90,0,0" VerticalAlignment="Top" Width="76" RenderTransformOrigin="0.431,-1.696"/>
+        <Label Content="Password" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="76"/>
 
     </Grid>
 </Window>

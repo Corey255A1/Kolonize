@@ -8,23 +8,16 @@ namespace Universe.Objects
 {
     public class Player : Moveable
     {
+        private int StepsLeft = -1;
         public Player(int x, int y, string id, int size = 1) : base(x, y, id, size)
         {
             ObjectType = WorldObjectTypes.PLAYER;
             MAX_SPEED = 0.2f;
-        }
-        private int StepsLeft = -1;
+        }      
         
         public void SetDirection(int dir, int paces)
         {
-            switch(dir)
-            {
-                case -1: SetVelocity(0, 0); break;
-                case 0: SetVelocity(0, -MAX_SPEED); Heading = 0; break;
-                case 1: SetVelocity(MAX_SPEED, 0); Heading = 1; break;
-                case 2: SetVelocity(0, MAX_SPEED); Heading = 2; break;
-                case 3: SetVelocity(-MAX_SPEED, 0); Heading = 3; break;
-            }
+            SetDirection((Direction)dir, paces > 0 ? MAX_SPEED : 0);
             StepsLeft = paces;
         }
         public override void Move(WorldCell[,] map, WorldObject[,] objects)
@@ -49,7 +42,7 @@ namespace Universe.Objects
 
             //Else we are a negative number and that means keep moving
         }
-        public void PerformAction(int action)
+        public void PerformAction(uint action)
         {
             switch(action)
             {

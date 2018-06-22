@@ -359,7 +359,7 @@ namespace Universe
             AddObject(player);
             return player;
         }
-        public void PerformPlayerAction(string name, string key, int action)
+        public void PerformPlayerAction(string name, string key, uint action)
         {
             Player p = GetPlayer(name, key);
             if(p!=null)

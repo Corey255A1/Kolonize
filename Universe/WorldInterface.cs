@@ -55,7 +55,7 @@ namespace Universe
         {
             return theWorld.GetPlayer(name,key);
         }
-        public static void PerformAction(string name, string key, int action)
+        public static void PerformAction(string name, string key, uint action)
         {
             theWorld.PerformPlayerAction(name, key, action);
         }

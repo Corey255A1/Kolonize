@@ -156,18 +156,69 @@ namespace KolonizeServer
             switch (p)
             {
                 case PacketTypes.REQUEST:
-                    {                        
-                        CellInfo c = new CellInfo(PacketTypes.REQUESTED);
-                        List<WorldCell> region = new List<WorldCell>(WorldInterface.GetRegionCells(ri.x1, ri.x2, ri.y1, ri.y2));
-                        int count = region.Count;
-                        foreach (WorldCell wc in region)
+                    {
+                        //Get Cell Type Info
+                        if ((ri.regionDataTypes & WorldConstants.REGION_INFO_CELL) != 0)
                         {
-                            c.cellType = (byte)wc.WorldCellType;
-                            c.remainingCells = --count;
-                            c.x = wc.X;
-                            c.y = wc.Y;
+                            CellInfo c = new CellInfo(PacketTypes.REQUESTED);
+                            List<WorldCell> region = new List<WorldCell>(WorldInterface.GetRegionCells(ri.x1, ri.x2, ri.y1, ri.y2));
+                            int count = region.Count;
+                            foreach (WorldCell wc in region)
+                            {
+                                c.cellType = (byte)wc.WorldCellType;
+                                c.remainingCells = --count; // I don't even know if this is necessary anymore...
+                                c.x = wc.X;
+                                c.y = wc.Y;
 
-                            s(NetHelpers.ConvertStructToBytes(c));
+                                s(NetHelpers.ConvertStructToBytes(c));
+                            }
+                        }
+                        //Get Object Info
+                        if ((ri.regionDataTypes & WorldConstants.REGION_INFO_OBJECT) != 0 || (ri.regionDataTypes & WorldConstants.REGION_INFO_PLAYER) !=0)
+                        {
+                            bool obj = (ri.regionDataTypes & WorldConstants.REGION_INFO_OBJECT) != 0;
+                            bool ply = (ri.regionDataTypes & WorldConstants.REGION_INFO_PLAYER) != 0;
+                            ObjectInfo o = new ObjectInfo(PacketTypes.REQUESTED);
+                            foreach(var wobject in WorldInterface.GetRegionObjects(ri.x1, ri.x2, ri.y1, ri.y2))
+                            {
+                                if (wobject == null) continue;
+                                var pos = wobject.GetPosition();
+                                if(wobject.ObjectType == WorldObjectTypes.PLAYER && ply)
+                                {
+                                    var vel = ((Player)wobject).GetVelocity();
+                                    o.id = wobject.Id;
+                                    o.x = pos.x;
+                                    o.y = pos.y;
+                                    o.vx = vel.x;
+                                    o.vy = vel.y;
+                                    o.objecttype = WorldConstants.TYPE_PLAYER;
+                                    s(NetHelpers.ConvertStructToBytes(o));
+                                }
+                                else if(obj)
+                                {
+                                    o.id = wobject.Id;
+                                    o.x = pos.x;
+                                    o.y = pos.y;
+                                    if (wobject.ObjectType == WorldObjectTypes.MARKER)
+                                    {
+                                        o.objecttype = WorldConstants.TYPE_MARKER;
+                                    }
+                                    else if (wobject.ObjectType == WorldObjectTypes.MOVEABLE)
+                                    {
+                                        var vel = ((Moveable)wobject).GetVelocity();
+                                        o.objecttype = WorldConstants.TYPE_MOVEABLE;
+                                        o.vx = vel.x;
+                                        o.vy = vel.y;
+                                    }
+                                    else
+                                    {
+                                        o.objecttype = WorldConstants.TYPE_GENERIC;
+                                    }
+                                    s(NetHelpers.ConvertStructToBytes(o));
+                                }
+                            }
+
+
                         }
                         return true;
                     }

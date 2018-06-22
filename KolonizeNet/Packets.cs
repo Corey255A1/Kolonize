@@ -19,19 +19,26 @@ namespace KolonizeNet
     }
     public static class WorldConstants
     {
-        public const byte SPACE = 0;
-        public const byte WATER = 1;
-        public const byte SAND = 2;
-        public const byte DIRT = 3;
-        public const byte ROCK = 4;
-        public const byte LAVA = 5;
-        public const byte ICE = 6;
+        //Cell Types
+        public const byte SPACE  = 0;
+        public const byte WATER  = 1;
+        public const byte SAND   = 2;
+        public const byte DIRT   = 3;
+        public const byte ROCK   = 4;
+        public const byte LAVA   = 5;
+        public const byte ICE    = 6;
 
-        public const int TYPE_GENERIC = 0;
-        public const int TYPE_MOVEABLE = 1;
-        public const int TYPE_PLAYER = 2;
-        public const int TYPE_MARKER = 3;
+        //Object Types
+        public const int TYPE_GENERIC    = 0;
+        public const int TYPE_MOVEABLE   = 1;
+        public const int TYPE_PLAYER     = 2;
+        public const int TYPE_MARKER     = 3;
 
+        //Region Info Types
+        public const uint REGION_INFO_CELL     = 1 << 0;
+        public const uint REGION_INFO_OBJECT   = 1 << 1;
+        public const uint REGION_INFO_PLAYER   = 1 << 2;
+        public const uint REGION_INFO_ALL  = 0xFFFFFFFF; //32bits
     }
 
 
@@ -81,6 +88,7 @@ namespace KolonizeNet
         public int x2;
         public int y1;
         public int y2;
+        public uint regionDataTypes; //Bit Field to request the types of info from a region
         public RegionInfo(PacketTypes p)
         {
             header.packetType = (byte)p;
@@ -89,6 +97,7 @@ namespace KolonizeNet
             y1 = 0;
             x2 = 0;
             y2 = 0;
+            regionDataTypes = 0;
         }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
@@ -146,7 +155,7 @@ namespace KolonizeNet
         public Header header;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
         public string id;
-        public int ActionBitField; //32 Possible Action (for now)
+        public uint ActionBitField; //32 Possible Actions (for now)
         public PlayerActionUpdate(PacketTypes p)
         {
             header.packetType = (byte)p;
@@ -164,7 +173,7 @@ namespace KolonizeNet
         public string id;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
         public string key;
-        public int ActionID; //32 Possible Action (for now)
+        public uint ActionID; //32 Possible Actions (for now)
         public PlayerPerformAction(PacketTypes p)
         {
             header.packetType = (byte)p;

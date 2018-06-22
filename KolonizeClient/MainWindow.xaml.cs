@@ -38,6 +38,7 @@ namespace KolonizeClient
         DispatcherTimer DrawTimer;
         Client theClient;
         bool UpdateLock = false;
+        Dictionary<string, DrawingBrush> ResourceMap = new Dictionary<string, DrawingBrush>();
         public MainWindow()
         {
             InitializeComponent();
@@ -52,7 +53,7 @@ namespace KolonizeClient
                         Height = 20,
                         Fill = Brushes.Black,
                         Stroke = Brushes.Black,
-                        StrokeThickness = 1
+                        StrokeThickness = 0
                     };
                     DisplayGrid[x, y] = r;
                     Canvas.SetTop(r, y * 20);
@@ -66,6 +67,9 @@ namespace KolonizeClient
             };
             DrawTimer.Tick += Draw;
             DrawTimer.Start();
+
+            ResourceMap["Grass"] = (DrawingBrush)this.FindResource("Grass");
+            ResourceMap["Water"] = (DrawingBrush)this.FindResource("Water");
         }
 
         public void Draw(object sender, EventArgs e)
@@ -136,9 +140,9 @@ namespace KolonizeClient
             switch (t)
             {
 
-                case WorldConstants.WATER: return Brushes.Blue;
-                case WorldConstants.SAND: return Brushes.Yellow;
-                case WorldConstants.DIRT: return Brushes.ForestGreen;
+                case WorldConstants.WATER: return Brushes.Blue; //return ResourceMap["Water"];
+                case WorldConstants.SAND: return Brushes.Yellow;//return (DrawingBrush)this.FindResource("Sand");
+                case WorldConstants.DIRT: return Brushes.ForestGreen;//return ResourceMap["Grass"];
                 case WorldConstants.ICE: return Brushes.LightCyan;
                 case WorldConstants.ROCK: return Brushes.Gray;
                 case WorldConstants.LAVA: return Brushes.Red;
@@ -173,7 +177,7 @@ namespace KolonizeClient
 
         private void connectBtn_Click(object sender, RoutedEventArgs e)
         {
-            theClient = new Client(userNameBox.Text);
+            theClient = new Client(userNameBox.Text, passwordBox.Password, serverBox.Text);
             theClient.RegisterForCellInfo(RxCellInfo);            
             theClient.RegisterForPlayerUpdates(MyPlayerInfo);
             theClient.RegisterForObjectUpdates(Update);
