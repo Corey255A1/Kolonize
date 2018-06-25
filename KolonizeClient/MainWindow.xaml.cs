@@ -38,7 +38,7 @@ namespace KolonizeClient
         DispatcherTimer DrawTimer;
         Client theClient;
         bool UpdateLock = false;
-        Dictionary<string, DrawingBrush> ResourceMap = new Dictionary<string, DrawingBrush>();
+        //Dictionary<string, DrawingBrush> ResourceMap = new Dictionary<string, DrawingBrush>();
         public MainWindow()
         {
             InitializeComponent();
@@ -68,8 +68,8 @@ namespace KolonizeClient
             DrawTimer.Tick += Draw;
             DrawTimer.Start();
 
-            ResourceMap["Grass"] = (DrawingBrush)this.FindResource("Grass");
-            ResourceMap["Water"] = (DrawingBrush)this.FindResource("Water");
+            //ResourceMap["Grass"] = (DrawingBrush)this.FindResource("Grass");
+            //ResourceMap["Water"] = (DrawingBrush)this.FindResource("Water");
         }
 
         public void Draw(object sender, EventArgs e)

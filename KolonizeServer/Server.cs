@@ -7,12 +7,14 @@ using System.Net.Sockets;
 using System.Net;
 using KolonizeNet;
 using Universe;
+using System.Net.WebSockets;
 namespace KolonizeServer
 {    
 
     public class Server
     {
         TcpListener theServer;
+        HttpListener theHttpListener = new HttpListener();
         WorldNetIF theWorldNet;
         List<ClientHandler> clientList = new List<ClientHandler>();
         public ClientUpdate ClientStatusUpdate;
@@ -20,9 +22,27 @@ namespace KolonizeServer
         {
             
             theServer = new TcpListener(IPAddress.Any , 15647);
+            theHttpListener.Prefixes.Add("http://localhost:15648/");
             theWorldNet = new WorldNetIF(this);
-            theServer.Start();
+            theServer.Start();//Before Hosting this to the world, have to open the port. Otherwise get an Access Denied
+            theHttpListener.Start();
             theServer.BeginAcceptTcpClient(ClientConnected, theServer);
+            theHttpListener.BeginGetContext(HTTPClientConnected, this);
+        }
+
+        private void HTTPClientConnected(IAsyncResult ar)
+        {
+            var context = theHttpListener.EndGetContext(ar);
+            if(context.Request.IsWebSocketRequest)
+            {
+                Console.WriteLine("Got A Websocket!!!!!!!!!!");
+            }
+            else
+            {
+                context.Response.StatusCode = 404;
+                context.Response.Close();
+            }
+            theHttpListener.BeginGetContext(HTTPClientConnected, this);
         }
 
         private void ClientConnected(IAsyncResult ar)
