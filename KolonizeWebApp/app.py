@@ -12,7 +12,7 @@ wsgi_app = app.wsgi_app
 
 @app.route('/')
 def hello():
-    """Renders a sample page."""
+    """Have to make this more robust..."""
     return app.send_static_file('index.html')
 
 if __name__ == '__main__':

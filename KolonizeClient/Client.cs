@@ -14,13 +14,13 @@ namespace KolonizeClient
         public string PlayerName = "Player1";
         public string PassKey = "";
         TcpClient theClient;        
-        StreamProcessor StreamController;
+        NetworkStreamProcessor StreamController;
         public Client(string playername, string password, string hostname)
         {
             PlayerName = playername;
             PassKey = password; //Definitely not secure ... Don't use your normal password! ;)
             theClient = new TcpClient(hostname, 15647);
-            StreamController = new StreamProcessor(theClient.GetStream(), PacketProcessors.ProcessPacket);
+            StreamController = new NetworkStreamProcessor(theClient.GetStream(), PacketProcessors.ProcessPacket);
         }
         public void RegisterForPlayerUpdates(PlayerUpdate p)
         {

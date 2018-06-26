@@ -18,31 +18,42 @@ namespace KolonizeServer
         WorldNetIF theWorldNet;
         List<ClientHandler> clientList = new List<ClientHandler>();
         public ClientUpdate ClientStatusUpdate;
+        private bool ServerActive = false;
         public Server()
         {
-            
+            ServerActive = true;
             theServer = new TcpListener(IPAddress.Any , 15647);
             theHttpListener.Prefixes.Add("http://localhost:15648/");
             theWorldNet = new WorldNetIF(this);
-            theServer.Start();//Before Hosting this to the world, have to open the port. Otherwise get an Access Denied
-            theHttpListener.Start();
+            
+            theServer.Start();//Before Hosting this to the world, have to open the port. Otherwise get an Access Denied           
             theServer.BeginAcceptTcpClient(ClientConnected, theServer);
-            theHttpListener.BeginGetContext(HTTPClientConnected, this);
+            BeginWebSocketHandler();
         }
 
-        private void HTTPClientConnected(IAsyncResult ar)
+
+        private async void BeginWebSocketHandler()
         {
-            var context = theHttpListener.EndGetContext(ar);
-            if(context.Request.IsWebSocketRequest)
+            theHttpListener.Start();
+            while(ServerActive)
             {
-                Console.WriteLine("Got A Websocket!!!!!!!!!!");
+                var httpcontext = await theHttpListener.GetContextAsync();
+                if (httpcontext.Request.IsWebSocketRequest)
+                {
+                    Console.WriteLine("Got A Websocket!!!!!!!!!!");
+                    var websocketcontext = await httpcontext.AcceptWebSocketAsync(null);
+                    var ch = new WebSocketClientHandler(websocketcontext.WebSocket, httpcontext.Request.RemoteEndPoint.Address.ToString());
+                    ch.ClientStatusEvent += ClientStatus;
+                    clientList.Add(ch);
+                    ClientStatusUpdate?.Invoke(ch, "Connected");
+                }
+                else
+                {
+                    httpcontext.Response.StatusCode = 404;
+                    httpcontext.Response.Close();
+                }
             }
-            else
-            {
-                context.Response.StatusCode = 404;
-                context.Response.Close();
-            }
-            theHttpListener.BeginGetContext(HTTPClientConnected, this);
+
         }
 
         private void ClientConnected(IAsyncResult ar)
@@ -50,7 +61,7 @@ namespace KolonizeServer
             try
             {
                 TcpClient t = theServer.EndAcceptTcpClient(ar);
-                var ch = new ClientHandler(t);
+                var ch = new TCPClientHandler(t);
                 ch.ClientStatusEvent += ClientStatus;
                 clientList.Add(ch);
                 ClientStatusUpdate?.Invoke(ch, "Connected");
